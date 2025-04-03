@@ -6,13 +6,14 @@ import { Switch } from "@/components/ui/switch";
 interface Step5Props {
   hasVehicles: boolean;
   vehiclesValue: string;
+  firstName?: string;
   onChange: (data: Partial<{
     hasVehicles: boolean;
     vehiclesValue: string;
   }>) => void;
 }
 
-const Step5VehiclesAssets = ({ hasVehicles, vehiclesValue, onChange }: Step5Props) => {
+const Step5VehiclesAssets = ({ hasVehicles, vehiclesValue, firstName, onChange }: Step5Props) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Vehicles and Other Assets</h2>
@@ -44,6 +45,12 @@ const Step5VehiclesAssets = ({ hasVehicles, vehiclesValue, onChange }: Step5Prop
             />
           </div>
         </div>
+      )}
+      
+      {firstName && (
+        <p className="text-lg text-purple-700 mt-4">
+          You're making great progress, {firstName}! Just a few more questions to go.
+        </p>
       )}
     </div>
   );

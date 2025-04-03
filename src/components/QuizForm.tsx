@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -21,6 +21,7 @@ interface QuizFormProps {
 }
 
 const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Step 1: Introduction
@@ -95,6 +96,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
   const handleSubmit = () => {
     console.log("Form submitted:", formData);
     onComplete(formData.firstName);
+    
+    navigate("/reports", { state: { formData } });
   };
 
   const renderStep = () => {
