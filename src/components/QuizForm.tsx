@@ -12,6 +12,7 @@ import Step6MonthlyIncome from "./steps/Step6MonthlyIncome";
 import Step7LongTermCare from "./steps/Step7LongTermCare";
 import Step8AssetTransfers from "./steps/Step8AssetTransfers";
 import Step9WrapUp from "./steps/Step9WrapUp";
+import { useToast } from "@/hooks/use-toast";
 
 const TOTAL_STEPS = 9;
 
@@ -22,6 +23,7 @@ interface QuizFormProps {
 
 const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     // Step 1: Introduction
     firstName: "",
@@ -81,12 +83,6 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
 
   const nextStep = () => {
     if (currentStep < TOTAL_STEPS) {
-      // If on the last step, make sure email is provided
-      if (currentStep === TOTAL_STEPS - 1 && !formData.email) {
-        alert("Please enter your email to receive the report");
-        return;
-      }
-      
       setCurrentStep((prev) => prev + 1);
       onProgressUpdate((currentStep / TOTAL_STEPS) * 100);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -102,9 +98,13 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
   };
 
   const handleSubmit = () => {
-    // Validate email before submission
+    // Only validate email when submitting the final form
     if (!formData.email) {
-      alert("Please enter your email to receive the report");
+      toast({
+        title: "Email Required",
+        description: "Please enter your email to receive the report",
+        variant: "destructive",
+      });
       return;
     }
     

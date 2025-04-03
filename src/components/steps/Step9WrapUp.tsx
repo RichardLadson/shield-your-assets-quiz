@@ -28,6 +28,7 @@ const Step9WrapUp = ({ email, firstName, completingFor, lovedOneName, onChange }
               : isForSelf 
                 ? "Please provide your email address so we can share your personalized Medicaid plan." 
                 : `Please provide your email address so we can share ${subjectName}'s personalized Medicaid plan.`}
+            <span className="text-red-500 ml-1">*</span>
           </Label>
           <Input
             id="email"
@@ -38,6 +39,7 @@ const Step9WrapUp = ({ email, firstName, completingFor, lovedOneName, onChange }
             className="w-full"
             required
           />
+          <p className="text-sm text-gray-500">Required to generate your report</p>
         </div>
       </div>
 
