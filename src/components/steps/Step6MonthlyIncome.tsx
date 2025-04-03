@@ -6,20 +6,22 @@ interface Step6Props {
   monthlyIncome: string;
   spouseMonthlyIncome: string;
   maritalStatus: string;
-  firstName: string;
+  firstName?: string;
   completingFor: string;
+  lovedOneName?: string;
   onChange: (data: Partial<{
     monthlyIncome: string;
     spouseMonthlyIncome: string;
   }>) => void;
 }
 
-const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus, firstName, completingFor, onChange }: Step6Props) => {
+const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus, firstName, completingFor, lovedOneName, onChange }: Step6Props) => {
   const isMarried = maritalStatus.startsWith('married');
   const isForSelf = completingFor === "myself";
 
   // Who the questions are about
-  const subject = isForSelf ? "your" : "their";
+  const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
+  const possessive = isForSelf ? "your" : `${subjectName}'s`;
   
   return (
     <div className="space-y-6">
@@ -30,7 +32,7 @@ const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus,
           <Label htmlFor="monthly-income">
             {isForSelf 
               ? "What's your monthly income?" 
-              : `What's ${firstName}'s monthly income?`}
+              : `What's ${subjectName}'s monthly income?`}
           </Label>
           <div className="relative">
             <span className="absolute left-3 top-2.5 text-gray-500">$</span>
@@ -50,7 +52,7 @@ const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus,
             <Label htmlFor="spouse-monthly-income">
               {isForSelf 
                 ? "How about your spouse's monthly income?" 
-                : `How about ${firstName}'s spouse's monthly income?`}
+                : `How about ${subjectName}'s spouse's monthly income?`}
             </Label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-gray-500">$</span>
@@ -69,8 +71,8 @@ const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus,
 
       <p className="text-lg text-purple-700 mt-4">
         {isForSelf 
-          ? `You're doing great, ${firstName}! Just a few more questions to go.` 
-          : `We're making good progress on ${firstName}'s assessment. Just a few more questions to go.`}
+          ? `You're doing great${firstName ? `, ${firstName}` : ''}! Just a few more questions to go.` 
+          : `We're making good progress on ${subjectName}'s assessment. Just a few more questions to go.`}
       </p>
     </div>
   );

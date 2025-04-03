@@ -4,13 +4,18 @@ import { Input } from "@/components/ui/input";
 
 interface Step9Props {
   email: string;
-  firstName: string;
+  firstName?: string;
+  completingFor: string;
+  lovedOneName?: string;
   onChange: (data: Partial<{
     email: string;
   }>) => void;
 }
 
-const Step9WrapUp = ({ email, firstName, onChange }: Step9Props) => {
+const Step9WrapUp = ({ email, firstName, completingFor, lovedOneName, onChange }: Step9Props) => {
+  const isForSelf = completingFor === "myself";
+  const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Almost Done!</h2>
@@ -18,9 +23,11 @@ const Step9WrapUp = ({ email, firstName, onChange }: Step9Props) => {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">
-            {firstName 
+            {isForSelf && firstName 
               ? `Can you provide your email address so we can share your personalized Medicaid plan, ${firstName}?` 
-              : "Can you provide your email address so we can share your personalized Medicaid plan?"}
+              : isForSelf 
+                ? "Can you provide your email address so we can share your personalized Medicaid plan?" 
+                : `Can you provide your email address so we can share ${subjectName}'s personalized Medicaid plan?`}
           </Label>
           <Input
             id="email"
@@ -43,12 +50,13 @@ const Step9WrapUp = ({ email, firstName, onChange }: Step9Props) => {
         </p>
       </div>
 
-      {firstName && (
-        <p className="text-lg text-purple-700 mt-4">
-          Thank you so much for taking the time to provide all this information, {firstName}! 🎉 
-          You're on the path to protecting your assets and getting the best Medicaid plan possible.
-        </p>
-      )}
+      <p className="text-lg text-purple-700 mt-4">
+        {isForSelf && firstName
+          ? `Thank you so much for taking the time to provide all this information, ${firstName}! 🎉 You're on the path to protecting your assets and getting the best Medicaid plan possible.`
+          : isForSelf
+            ? "Thank you so much for taking the time to provide all this information! 🎉 You're on the path to protecting your assets and getting the best Medicaid plan possible."
+            : `Thank you so much for taking the time to provide all this information for ${subjectName}! 🎉 You're on the path to protecting ${subjectName}'s assets and getting the best Medicaid plan possible.`}
+      </p>
     </div>
   );
 };

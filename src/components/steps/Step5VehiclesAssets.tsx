@@ -63,8 +63,8 @@ const Step5VehiclesAssets = ({
       
       <p className="text-lg text-purple-700 mt-4">
         {isForSelf 
-          ? `You're making great progress, ${firstName || ""}! Just a few more questions to go.` 
-          : `We're making great progress on ${lovedOneName || "your loved one"}'s assessment! Just a few more questions to go.`}
+          ? `You're making great progress${firstName ? `, ${firstName}` : ''}! Just a few more questions to go.` 
+          : `We're making great progress on ${subjectName}'s assessment! Just a few more questions to go.`}
       </p>
     </div>
   );

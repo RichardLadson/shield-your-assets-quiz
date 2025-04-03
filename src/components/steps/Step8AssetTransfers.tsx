@@ -6,20 +6,33 @@ import { Switch } from "@/components/ui/switch";
 interface Step8Props {
   hasTransferredAssets: boolean;
   transferredAssetsValue: string;
-  firstName: string;
+  firstName?: string;
+  completingFor: string;
+  lovedOneName?: string;
   onChange: (data: Partial<{
     hasTransferredAssets: boolean;
     transferredAssetsValue: string;
   }>) => void;
 }
 
-const Step8AssetTransfers = ({ hasTransferredAssets, transferredAssetsValue, firstName, onChange }: Step8Props) => {
+const Step8AssetTransfers = ({ 
+  hasTransferredAssets, 
+  transferredAssetsValue, 
+  firstName, 
+  completingFor, 
+  lovedOneName,
+  onChange 
+}: Step8Props) => {
+  const isForSelf = completingFor === "myself";
+  const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
+  const doesDo = isForSelf ? "Have you" : `Has ${subjectName}`;
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Gifts or Asset Transfers</h2>
       
       <div className="flex items-center justify-between">
-        <Label htmlFor="has-transferred-assets">Have you given away or transferred any assets in the past 60 months?</Label>
+        <Label htmlFor="has-transferred-assets">{doesDo} given away or transferred any assets in the past 60 months?</Label>
         <Switch
           id="has-transferred-assets"
           checked={hasTransferredAssets}
@@ -47,11 +60,11 @@ const Step8AssetTransfers = ({ hasTransferredAssets, transferredAssetsValue, fir
         </div>
       )}
 
-      {firstName && (
-        <p className="text-lg text-purple-700 mt-4">
-          Awesome work, {firstName}! These details are super important to get a complete picture of your eligibility and plan.
-        </p>
-      )}
+      <p className="text-lg text-purple-700 mt-4">
+        {isForSelf 
+          ? `Awesome work${firstName ? `, ${firstName}` : ''}! These details are super important to get a complete picture of your eligibility and plan.` 
+          : `Awesome work! These details are super important to get a complete picture of ${subjectName}'s eligibility and plan.`}
+      </p>
     </div>
   );
 };
