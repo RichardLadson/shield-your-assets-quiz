@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calculateAssetData } from "@/lib/reportCalculations";
 import { Badge } from "@/components/ui/badge";
-import { InfoCircle, ShieldCheck, AlertCircle } from "lucide-react";
+import { Info, ShieldCheck, AlertCircle } from "lucide-react";
 
 interface LeadMagnetReportProps {
   formData: any;
@@ -32,7 +31,7 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
         <Card className="shadow-md">
           <CardHeader className="pb-2 bg-blue-50">
             <CardTitle className="text-blue-700 flex items-center text-lg">
-              <InfoCircle className="mr-2 h-5 w-5" /> Total Assets
+              <Info className="mr-2 h-5 w-5" /> Total Assets
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
