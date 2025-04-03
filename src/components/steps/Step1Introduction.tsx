@@ -52,7 +52,7 @@ const Step1Introduction = ({ firstName, lastName, completingFor, onChange }: Ste
 
         <div className="space-y-2">
           <Label htmlFor="completingFor">
-            {firstName ? `${firstName}, are` : "Are"} you completing this form for yourself or for someone else?
+            {firstName ? `${firstName}, who` : "Who"} is this Medicaid planning assessment for?
           </Label>
           <Select value={completingFor} onValueChange={(value) => onChange({ completingFor: value })}>
             <SelectTrigger id="completingFor" className="w-full">
@@ -60,15 +60,18 @@ const Step1Introduction = ({ firstName, lastName, completingFor, onChange }: Ste
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="myself">For myself</SelectItem>
-              <SelectItem value="loved-one">For a loved one</SelectItem>
+              <SelectItem value="loved-one">For a parent or loved one</SelectItem>
               <SelectItem value="client">For a friend or client</SelectItem>
             </SelectContent>
           </Select>
+          <p className="text-sm text-gray-500 mt-1">
+            This helps us personalize the questions throughout the assessment.
+          </p>
         </div>
 
         {firstName && (
           <p className="text-lg text-purple-700 mt-4">
-            Thank you, {firstName}. We're here to make this process easy and to help protect your assets for the future.
+            Thank you, {firstName}. We're here to make this process easy and to help protect {completingFor === "myself" ? "your" : "your loved one's"} assets for the future.
           </p>
         )}
       </div>

@@ -147,6 +147,7 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
         return <Step5VehiclesAssets 
           hasVehicles={formData.hasVehicles}
           vehiclesValue={formData.vehiclesValue}
+          firstName={formData.firstName}
           onChange={(data) => updateFormData(data)}
         />;
       case 6:
@@ -155,6 +156,7 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           spouseMonthlyIncome={formData.spouseMonthlyIncome}
           maritalStatus={formData.maritalStatus}
           firstName={formData.firstName}
+          completingFor={formData.completingFor}
           onChange={(data) => updateFormData(data)}
         />;
       case 7:

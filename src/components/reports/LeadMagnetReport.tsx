@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calculateAssetData } from "@/lib/reportCalculations";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +9,14 @@ interface LeadMagnetReportProps {
 }
 
 const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
-  const { firstName, lastName } = formData;
+  const { firstName, lastName, completingFor } = formData;
   const displayName = firstName || "Friend";
+  
+  // Determine who the report is about
+  const isForSelf = completingFor === "myself";
+  const subjectPronoun = isForSelf ? "Your" : `${firstName}'s`;
+  const objectPronoun = isForSelf ? "your" : "their";
+  const reflexivePronoun = isForSelf ? "yourself" : "themselves";
   
   const {
     totalAssets,
@@ -23,8 +30,12 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
   return (
     <div className="space-y-6 print:text-black">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-purple-800">Medicaid Planning Snapshot for {displayName}</h1>
-        <p className="text-gray-500 mt-2">Your personalized asset protection analysis</p>
+        <h1 className="text-3xl font-bold text-purple-800">
+          {isForSelf ? "Your" : `${firstName}'s`} Medicaid Planning Snapshot
+        </h1>
+        <p className="text-gray-500 mt-2">
+          {isForSelf ? "Your" : "A"} personalized asset protection analysis
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -37,8 +48,10 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
           <CardContent className="pt-4">
             <p className="text-3xl font-bold">${totalAssets.toLocaleString()}</p>
             <p className="text-sm text-gray-500 mt-2">
-              {displayName} has accumulated significant assets, including their home, savings, and investments. Understanding 
-              the value of these assets is crucial in determining how to protect them effectively while planning for Medicaid.
+              {isForSelf 
+                ? "You have accumulated significant assets, including your home, savings, and investments."
+                : `${firstName} has accumulated significant assets, including ${objectPronoun} home, savings, and investments.`
+              } Understanding the value of these assets is crucial in determining how to protect them effectively while planning for Medicaid.
             </p>
           </CardContent>
         </Card>
@@ -52,7 +65,7 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
           <CardContent className="pt-4">
             <p className="text-3xl font-bold">${countableAssets.toLocaleString()}</p>
             <p className="text-sm text-gray-500 mt-2">
-              Out of {displayName}'s total assets, ${countableAssets.toLocaleString()} are considered countable and at risk of 
+              Out of {subjectPronoun.toLowerCase()} total assets, ${countableAssets.toLocaleString()} are considered countable and at risk of 
               impacting Medicaid eligibility. These assets are subject to Medicaid's spend-down requirements unless properly managed.
             </p>
           </CardContent>
@@ -69,8 +82,8 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
               ${minProtection.toLocaleString()} - ${maxProtection.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              With the right Medicaid planning strategies, {displayName} could potentially protect 
-              {minPercentage}% to {maxPercentage}% of their countable assets.*
+              With the right Medicaid planning strategies, {isForSelf ? "you" : firstName} could potentially protect 
+              {minPercentage}% to {maxPercentage}% of {isForSelf ? "your" : objectPronoun} countable assets.*
             </p>
           </CardContent>
         </Card>
@@ -92,7 +105,9 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
             <Badge className="mt-1 bg-purple-700">2</Badge>
             <div className="ml-4">
               <h3 className="font-semibold">Consult with a Certified Medicaid Planner</h3>
-              <p className="text-gray-600">Speak with a Certified Medicaid Planner who can guide you through the specific steps needed to protect {displayName}'s assets.</p>
+              <p className="text-gray-600">
+                Speak with a Certified Medicaid Planner who can guide {isForSelf ? "you" : "you both"} through the specific steps needed to protect {isForSelf ? "your" : `${firstName}'s`} assets.
+              </p>
             </div>
           </div>
           
