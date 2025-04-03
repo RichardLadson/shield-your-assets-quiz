@@ -15,6 +15,7 @@ interface Step3Props {
   homeValue: string;
   mortgageStatus: string;
   mortgageBalance: string;
+  firstName: string;
   onChange: (data: Partial<{
     ownsHome: boolean;
     homeValue: string;
@@ -23,14 +24,13 @@ interface Step3Props {
   }>) => void;
 }
 
-const Step3PrimaryResidence = ({ ownsHome, homeValue, mortgageStatus, mortgageBalance, onChange }: Step3Props) => {
+const Step3PrimaryResidence = ({ ownsHome, homeValue, mortgageStatus, mortgageBalance, firstName, onChange }: Step3Props) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Primary Residence</h2>
-      <p className="text-gray-600">Please provide information about your primary residence.</p>
       
       <div className="flex items-center justify-between">
-        <Label htmlFor="owns-home">Do you own a home?</Label>
+        <Label htmlFor="owns-home">{firstName ? `${firstName}, do` : "Do"} you own your home?</Label>
         <Switch
           id="owns-home"
           checked={ownsHome}
@@ -41,7 +41,7 @@ const Step3PrimaryResidence = ({ ownsHome, homeValue, mortgageStatus, mortgageBa
       {ownsHome && (
         <>
           <div className="space-y-2">
-            <Label htmlFor="home-value">Estimated Value</Label>
+            <Label htmlFor="home-value">What's the estimated value of your home?</Label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-gray-500">$</span>
               <Input
@@ -56,7 +56,7 @@ const Step3PrimaryResidence = ({ ownsHome, homeValue, mortgageStatus, mortgageBa
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mortgage-status">Mortgage Status</Label>
+            <Label htmlFor="mortgage-status">Do you have a mortgage on your home?</Label>
             <Select value={mortgageStatus} onValueChange={(value) => onChange({ mortgageStatus: value })}>
               <SelectTrigger id="mortgage-status">
                 <SelectValue placeholder="Select mortgage status" />
