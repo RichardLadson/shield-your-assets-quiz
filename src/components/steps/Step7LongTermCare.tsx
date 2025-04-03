@@ -7,19 +7,33 @@ interface Step7Props {
   hasLongTermCare: boolean;
   longTermCareAmount: string;
   firstName: string;
+  completingFor: string;
+  lovedOneName?: string;
   onChange: (data: Partial<{
     hasLongTermCare: boolean;
     longTermCareAmount: string;
   }>) => void;
 }
 
-const Step7LongTermCare = ({ hasLongTermCare, longTermCareAmount, firstName, onChange }: Step7Props) => {
+const Step7LongTermCare = ({ 
+  hasLongTermCare, 
+  longTermCareAmount, 
+  firstName, 
+  completingFor, 
+  lovedOneName,
+  onChange 
+}: Step7Props) => {
+  const isForSelf = completingFor === "myself";
+  const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
+  const possessive = isForSelf ? "you" : `${subjectName}`;
+  const doesDo = isForSelf ? "Do you" : `Does ${subjectName}`;
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Long-Term Care Insurance</h2>
       
       <div className="flex items-center justify-between">
-        <Label htmlFor="has-long-term-care">Do you have long-term care insurance?</Label>
+        <Label htmlFor="has-long-term-care">{doesDo} have long-term care insurance?</Label>
         <Switch
           id="has-long-term-care"
           checked={hasLongTermCare}
@@ -47,11 +61,11 @@ const Step7LongTermCare = ({ hasLongTermCare, longTermCareAmount, firstName, onC
         </div>
       )}
 
-      {firstName && (
-        <p className="text-lg text-purple-700 mt-4">
-          You're almost there, {firstName}! We're just collecting a few more details.
-        </p>
-      )}
+      <p className="text-lg text-purple-700 mt-4">
+        {isForSelf 
+          ? `You're almost there, ${firstName}! We're just collecting a few more details.` 
+          : `We're almost done with ${lovedOneName || "your loved one"}'s assessment! Just a few more details to collect.`}
+      </p>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,9 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
     firstName: "",
     lastName: "",
     completingFor: "myself",
+    lovedOneName: "",
+    lovedOneGender: "",
+    lovedOneRelation: "",
     
     // Step 2: Basic Details
     state: "",
@@ -107,6 +111,9 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           firstName={formData.firstName}
           lastName={formData.lastName}
           completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
+          lovedOneGender={formData.lovedOneGender}
+          lovedOneRelation={formData.lovedOneRelation}
           onChange={(data) => updateFormData(data)}
         />;
       case 2:
@@ -115,6 +122,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           age={formData.age}
           maritalStatus={formData.maritalStatus}
           firstName={formData.firstName}
+          completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       case 3:
@@ -124,6 +133,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           mortgageStatus={formData.mortgageStatus}
           mortgageBalance={formData.mortgageBalance}
           firstName={formData.firstName}
+          completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       case 4:
@@ -141,6 +152,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           additionalPropertyMortgageBalance={formData.additionalPropertyMortgageBalance}
           firstName={formData.firstName}
           maritalStatus={formData.maritalStatus}
+          completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       case 5:
@@ -148,6 +161,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           hasVehicles={formData.hasVehicles}
           vehiclesValue={formData.vehiclesValue}
           firstName={formData.firstName}
+          completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       case 6:
@@ -157,6 +172,7 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           maritalStatus={formData.maritalStatus}
           firstName={formData.firstName}
           completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       case 7:
@@ -164,6 +180,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           hasLongTermCare={formData.hasLongTermCare}
           longTermCareAmount={formData.longTermCareAmount}
           firstName={formData.firstName}
+          completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       case 8:
@@ -171,12 +189,16 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           hasTransferredAssets={formData.hasTransferredAssets}
           transferredAssetsValue={formData.transferredAssetsValue}
           firstName={formData.firstName}
+          completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       case 9:
         return <Step9WrapUp 
           email={formData.email}
           firstName={formData.firstName}
+          completingFor={formData.completingFor}
+          lovedOneName={formData.lovedOneName}
           onChange={(data) => updateFormData(data)}
         />;
       default:

@@ -16,6 +16,8 @@ interface Step3Props {
   mortgageStatus: string;
   mortgageBalance: string;
   firstName: string;
+  completingFor: string;
+  lovedOneName?: string;
   onChange: (data: Partial<{
     ownsHome: boolean;
     homeValue: string;
@@ -24,13 +26,28 @@ interface Step3Props {
   }>) => void;
 }
 
-const Step3PrimaryResidence = ({ ownsHome, homeValue, mortgageStatus, mortgageBalance, firstName, onChange }: Step3Props) => {
+const Step3PrimaryResidence = ({ 
+  ownsHome, 
+  homeValue, 
+  mortgageStatus, 
+  mortgageBalance, 
+  firstName, 
+  completingFor,
+  lovedOneName,
+  onChange 
+}: Step3Props) => {
+  const isForSelf = completingFor === "myself";
+  const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
+  const possessive = isForSelf ? "your" : `${subjectName}'s`;
+  const pronoun = isForSelf ? "you" : subjectName;
+  const doesDo = isForSelf ? "do" : "does";
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Primary Residence</h2>
       
       <div className="flex items-center justify-between">
-        <Label htmlFor="owns-home">{firstName ? `${firstName}, do` : "Do"} you own your home?</Label>
+        <Label htmlFor="owns-home">{doesDo} {pronoun} own a home?</Label>
         <Switch
           id="owns-home"
           checked={ownsHome}
@@ -41,7 +58,7 @@ const Step3PrimaryResidence = ({ ownsHome, homeValue, mortgageStatus, mortgageBa
       {ownsHome && (
         <>
           <div className="space-y-2">
-            <Label htmlFor="home-value">What's the estimated value of your home?</Label>
+            <Label htmlFor="home-value">What's the estimated value of {possessive} home?</Label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-gray-500">$</span>
               <Input
@@ -56,7 +73,7 @@ const Step3PrimaryResidence = ({ ownsHome, homeValue, mortgageStatus, mortgageBa
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mortgage-status">Do you have a mortgage on your home?</Label>
+            <Label htmlFor="mortgage-status">{doesDo} {pronoun} have a mortgage?</Label>
             <Select value={mortgageStatus} onValueChange={(value) => onChange({ mortgageStatus: value })}>
               <SelectTrigger id="mortgage-status">
                 <SelectValue placeholder="Select mortgage status" />

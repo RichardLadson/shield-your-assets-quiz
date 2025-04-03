@@ -7,19 +7,33 @@ interface Step5Props {
   hasVehicles: boolean;
   vehiclesValue: string;
   firstName?: string;
+  completingFor: string;
+  lovedOneName?: string;
   onChange: (data: Partial<{
     hasVehicles: boolean;
     vehiclesValue: string;
   }>) => void;
 }
 
-const Step5VehiclesAssets = ({ hasVehicles, vehiclesValue, firstName, onChange }: Step5Props) => {
+const Step5VehiclesAssets = ({ 
+  hasVehicles, 
+  vehiclesValue, 
+  firstName, 
+  completingFor,
+  lovedOneName,
+  onChange 
+}: Step5Props) => {
+  const isForSelf = completingFor === "myself";
+  const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
+  const possessive = isForSelf ? "you" : `${subjectName}`;
+  const doesDo = isForSelf ? "Do you" : `Does ${subjectName}`;
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Vehicles and Other Assets</h2>
       
       <div className="flex items-center justify-between">
-        <Label htmlFor="has-vehicles">Do you own any other vehicles like a second car, an RV, or a boat?</Label>
+        <Label htmlFor="has-vehicles">{doesDo} own any other vehicles like a second car, an RV, or a boat?</Label>
         <Switch
           id="has-vehicles"
           checked={hasVehicles}
@@ -47,11 +61,11 @@ const Step5VehiclesAssets = ({ hasVehicles, vehiclesValue, firstName, onChange }
         </div>
       )}
       
-      {firstName && (
-        <p className="text-lg text-purple-700 mt-4">
-          You're making great progress, {firstName}! Just a few more questions to go.
-        </p>
-      )}
+      <p className="text-lg text-purple-700 mt-4">
+        {isForSelf 
+          ? `You're making great progress, ${firstName || ""}! Just a few more questions to go.` 
+          : `We're making great progress on ${lovedOneName || "your loved one"}'s assessment! Just a few more questions to go.`}
+      </p>
     </div>
   );
 };

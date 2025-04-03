@@ -56,8 +56,9 @@ const Reports = () => {
     urgencyLevel.includes("Medium") ? "text-yellow-600" : 
     "text-green-600";
   
-  const { firstName, completingFor } = formData;
+  const { firstName, completingFor, lovedOneName } = formData;
   const isForSelf = completingFor === "myself";
+  const displayName = isForSelf ? firstName : (lovedOneName || "Your loved one");
   
   return (
     <div className="container mx-auto px-4 py-8">
@@ -91,7 +92,7 @@ const Reports = () => {
             <CardContent className="p-4 flex items-center">
               <AlertTriangle className="text-red-500 mr-3 h-5 w-5" />
               <p className="text-red-700">
-                <span className="font-semibold">High Planning Urgency:</span> {isForSelf ? "Your" : `${firstName}'s`} situation requires immediate Medicaid planning attention. 
+                <span className="font-semibold">High Planning Urgency:</span> {displayName}'s situation requires immediate Medicaid planning attention. 
                 Please consult with a Medicaid planner as soon as possible.
               </p>
             </CardContent>
@@ -100,10 +101,10 @@ const Reports = () => {
         
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            {isForSelf ? "Your" : `${firstName}'s`} Medicaid Planning Reports
+            {displayName}'s Medicaid Planning Reports
           </h1>
           <p className="text-gray-600 mt-2">
-            Based on the information provided, we've created two reports to help {isForSelf ? "you" : `${firstName}`} understand {isForSelf ? "your" : "their"} 
+            Based on the information provided, we've created two reports to help {isForSelf ? "you" : displayName} understand {isForSelf ? "your" : "their"} 
             Medicaid eligibility and potential asset protection strategies.
           </p>
         </div>
@@ -115,7 +116,7 @@ const Reports = () => {
           </TabsList>
           <div className="mt-2 text-sm text-gray-500 text-center">
             {currentTab === "lead-magnet" ? (
-              <p>A simplified overview of {isForSelf ? "your" : `${firstName}'s`} asset protection potential</p>
+              <p>A simplified overview of {displayName}'s asset protection potential</p>
             ) : (
               <p>A comprehensive analysis with detailed strategies</p>
             )}

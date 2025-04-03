@@ -14,6 +14,8 @@ interface Step2Props {
   age: string;
   maritalStatus: string;
   firstName: string;
+  completingFor: string;
+  lovedOneName?: string;
   onChange: (data: Partial<{
     state: string;
     age: string;
@@ -32,8 +34,11 @@ const US_STATES = [
   "Wisconsin", "Wyoming"
 ];
 
-const Step2BasicDetails = ({ state, age, maritalStatus, firstName, onChange }: Step2Props) => {
-  const personalizedGreeting = firstName ? `${firstName}, which` : "Which";
+const Step2BasicDetails = ({ state, age, maritalStatus, firstName, completingFor, lovedOneName, onChange }: Step2Props) => {
+  const isForSelf = completingFor === "myself";
+  const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
+  const possessive = isForSelf ? "your" : `${subjectName}'s`;
+  const pronoun = isForSelf ? "you" : subjectName;
   
   return (
     <div className="space-y-6">
@@ -41,10 +46,10 @@ const Step2BasicDetails = ({ state, age, maritalStatus, firstName, onChange }: S
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="state">{personalizedGreeting} state do you currently live in?</Label>
+          <Label htmlFor="state">Which state does {pronoun} currently live in?</Label>
           <Select value={state} onValueChange={(value) => onChange({ state: value })}>
             <SelectTrigger id="state" className="w-full">
-              <SelectValue placeholder="Select your state" />
+              <SelectValue placeholder="Select state" />
             </SelectTrigger>
             <SelectContent>
               {US_STATES.map((stateName) => (
@@ -58,7 +63,7 @@ const Step2BasicDetails = ({ state, age, maritalStatus, firstName, onChange }: S
 
         <div className="space-y-2">
           <Label htmlFor="age">
-            {firstName ? `How old are you, ${firstName}?` : "How old are you?"}
+            How old is {pronoun}?
           </Label>
           <Input
             id="age"
@@ -67,13 +72,13 @@ const Step2BasicDetails = ({ state, age, maritalStatus, firstName, onChange }: S
             max="120"
             value={age}
             onChange={(e) => onChange({ age: e.target.value })}
-            placeholder="Enter your age"
+            placeholder="Enter age"
             className="w-full"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="maritalStatus">What's your marital status?</Label>
+          <Label htmlFor="maritalStatus">What's {possessive} marital status?</Label>
           <Select value={maritalStatus} onValueChange={(value) => onChange({ maritalStatus: value })}>
             <SelectTrigger id="maritalStatus" className="w-full">
               <SelectValue placeholder="Select marital status" />
