@@ -35,7 +35,7 @@ const Step1Introduction = ({
   lovedOneRelation, 
   onChange 
 }: Step1Props) => {
-  const showLovedOneFields = completingFor === "loved-one" || completingFor === "client";
+  const showLovedOneFields = completingFor === "someone-else";
   
   return (
     <div className="space-y-6">
@@ -74,19 +74,18 @@ const Step1Introduction = ({
             value={completingFor} 
             onValueChange={(value) => onChange({ 
               completingFor: value,
-              // Reset the loved one fields if switching to "myself"
-              lovedOneName: value === "myself" ? "" : lovedOneName,
-              lovedOneGender: value === "myself" ? "" : lovedOneGender,
-              lovedOneRelation: value === "myself" ? "" : lovedOneRelation
+              // Reset the loved one fields if switching to "yourself"
+              lovedOneName: value === "yourself" ? "" : lovedOneName,
+              lovedOneGender: value === "yourself" ? "" : lovedOneGender,
+              lovedOneRelation: value === "yourself" ? "" : lovedOneRelation
             })}
           >
             <SelectTrigger id="completingFor" className="w-full">
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="myself">For myself</SelectItem>
-              <SelectItem value="loved-one">For a parent or loved one</SelectItem>
-              <SelectItem value="client">For a friend or client</SelectItem>
+              <SelectItem value="yourself">For yourself</SelectItem>
+              <SelectItem value="someone-else">For someone else</SelectItem>
             </SelectContent>
           </Select>
           <p className="text-sm text-gray-500 mt-1">
@@ -142,7 +141,7 @@ const Step1Introduction = ({
 
         {firstName && (
           <p className="text-lg text-purple-700 mt-4">
-            Thank you, {firstName}. We're here to make this process easy and to help protect {completingFor === "myself" ? "your" : lovedOneName ? `${lovedOneName}'s` : "your loved one's"} assets for the future.
+            Thank you, {firstName}. We're here to make this process easy and to help protect {completingFor === "yourself" ? "your" : lovedOneName ? `${lovedOneName}'s` : "your loved one's"} assets for the future.
           </p>
         )}
       </div>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import QuizForm from "./QuizForm";
@@ -52,13 +51,13 @@ const QuizContainer = () => {
   };
   
   const scheduleAppointment = () => {
-    // This would connect to a scheduling service or show a contact form
     alert("This would open a scheduling calendar in a real application.");
   };
 
   const renderCompletedStep = () => {
     const { firstName, completingFor, lovedOneName } = formData || {};
-    const displayName = completingFor === "myself" ? firstName || "you" : lovedOneName || "your loved one";
+    const isForSelf = completingFor === "yourself";
+    const displayName = isForSelf ? firstName || "you" : lovedOneName || "your loved one";
     
     switch (currentCompletedStep) {
       case 1:
@@ -207,17 +206,6 @@ const QuizContainer = () => {
                     <span>What is your timeline for potential long-term care needs?</span>
                   </li>
                 </ul>
-              </div>
-              
-              <div className="flex justify-center mt-6">
-                <Button 
-                  onClick={scheduleAppointment} 
-                  size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg rounded-lg flex items-center"
-                >
-                  <CalendarClock className="mr-2 h-5 w-5" />
-                  Schedule Your Free Consultation Now
-                </Button>
               </div>
               
               <div className="flex justify-between">

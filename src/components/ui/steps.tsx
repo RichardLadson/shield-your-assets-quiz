@@ -17,9 +17,6 @@ interface StepProps {
 }
 
 export const Steps = ({ currentStep, totalSteps, children }: StepsProps) => {
-  // Convert children to array to access them by index
-  const childrenArray = React.Children.toArray(children);
-
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
@@ -53,7 +50,7 @@ export const Step = ({
           <div 
             className={cn(
               "h-1 flex-1", 
-              isCompleted ? "bg-purple-600" : "bg-gray-200"
+              isCompleted || isActive ? "bg-purple-600" : "bg-gray-200"
             )} 
           />
         )}
@@ -89,8 +86,7 @@ export const Step = ({
         <p 
           className={cn(
             "text-sm font-medium",
-            isActive && "text-purple-600",
-            isCompleted && "text-purple-600",
+            (isActive || isCompleted) && "text-purple-600",
             !isActive && !isCompleted && "text-gray-500"
           )}
         >

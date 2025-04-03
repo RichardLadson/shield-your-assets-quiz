@@ -13,7 +13,7 @@ interface Step9Props {
 }
 
 const Step9WrapUp = ({ email, firstName, completingFor, lovedOneName, onChange }: Step9Props) => {
-  const isForSelf = completingFor === "myself";
+  const isForSelf = completingFor === "yourself";
   const subjectName = isForSelf ? firstName : lovedOneName || "your loved one";
   
   return (
@@ -24,18 +24,19 @@ const Step9WrapUp = ({ email, firstName, completingFor, lovedOneName, onChange }
         <div className="space-y-2">
           <Label htmlFor="email">
             {isForSelf && firstName 
-              ? `Can you provide your email address so we can share your personalized Medicaid plan, ${firstName}?` 
+              ? `Please provide your email address so we can share your personalized Medicaid plan, ${firstName}.` 
               : isForSelf 
-                ? "Can you provide your email address so we can share your personalized Medicaid plan?" 
-                : `Can you provide your email address so we can share ${subjectName}'s personalized Medicaid plan?`}
+                ? "Please provide your email address so we can share your personalized Medicaid plan." 
+                : `Please provide your email address so we can share ${subjectName}'s personalized Medicaid plan.`}
           </Label>
           <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => onChange({ email: e.target.value })}
-            placeholder="your@email.com (optional)"
+            placeholder="your@email.com"
             className="w-full"
+            required
           />
         </div>
       </div>

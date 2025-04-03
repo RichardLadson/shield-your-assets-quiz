@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,7 +26,7 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
     // Step 1: Introduction
     firstName: "",
     lastName: "",
-    completingFor: "myself",
+    completingFor: "yourself",
     lovedOneName: "",
     lovedOneGender: "",
     lovedOneRelation: "",
@@ -80,6 +81,12 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
 
   const nextStep = () => {
     if (currentStep < TOTAL_STEPS) {
+      // If on the last step, make sure email is provided
+      if (currentStep === TOTAL_STEPS - 1 && !formData.email) {
+        alert("Please enter your email to receive the report");
+        return;
+      }
+      
       setCurrentStep((prev) => prev + 1);
       onProgressUpdate((currentStep / TOTAL_STEPS) * 100);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -95,6 +102,12 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
   };
 
   const handleSubmit = () => {
+    // Validate email before submission
+    if (!formData.email) {
+      alert("Please enter your email to receive the report");
+      return;
+    }
+    
     console.log("Form submitted:", formData);
     onComplete(formData);
   };
