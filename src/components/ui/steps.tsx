@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +11,9 @@ interface StepsProps {
 
 interface StepProps {
   title: string;
+  isActive?: boolean;
+  isCompleted?: boolean;
+  stepNumber?: number;
 }
 
 export const Steps = ({ currentStep, totalSteps, children }: StepsProps) => {
@@ -41,11 +45,7 @@ export const Step = ({
   isActive = false, 
   isCompleted = false, 
   stepNumber = 1 
-}: StepProps & { 
-  isActive?: boolean; 
-  isCompleted?: boolean; 
-  stepNumber?: number;
-}) => {
+}: StepProps) => {
   return (
     <div className="flex-1">
       <div className="flex items-center">
