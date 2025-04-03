@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calculateAssetData } from "@/lib/reportCalculations";
+import { medicaidPlanningAlgorithm } from "@/lib/medicaidPlanningCalculations";
 import { Badge } from "@/components/ui/badge";
 import { Info, ShieldCheck, AlertCircle } from "lucide-react";
 
@@ -18,14 +19,16 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
   const objectPronoun = isForSelf ? "your" : "their";
   const reflexivePronoun = isForSelf ? "yourself" : "themselves";
   
+  // Use the new medicaid planning algorithm for more detailed calculations
   const {
     totalAssets,
     countableAssets,
     minProtection,
     maxProtection,
     minPercentage,
-    maxPercentage
-  } = calculateAssetData(formData);
+    maxPercentage,
+    planningApproach
+  } = medicaidPlanningAlgorithm(formData);
 
   return (
     <div className="space-y-6 print:text-black">
@@ -90,6 +93,11 @@ const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
       </div>
 
       <div className="mt-8">
+        <h2 className="text-xl font-bold text-purple-800 mb-4">Recommended Approach:</h2>
+        <p className="text-gray-700 mb-4">
+          {planningApproach}
+        </p>
+        
         <h2 className="text-xl font-bold text-purple-800 mb-4">Recommended Next Steps:</h2>
         
         <div className="space-y-4">

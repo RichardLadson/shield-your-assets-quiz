@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calculateDetailedAssetData } from "@/lib/reportCalculations";
+import { medicaidPlanningAlgorithm } from "@/lib/medicaidPlanningCalculations";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, DollarSign, PieChart, ArrowRight } from "lucide-react";
@@ -10,22 +11,97 @@ interface ProfessionalReportProps {
 }
 
 const ProfessionalReport = ({ formData }: ProfessionalReportProps) => {
-  const { firstName, lastName, state } = formData;
+  const { firstName, lastName, state, completingFor } = formData;
   const displayName = firstName || "Client";
   
+  // Determine who the report is about
+  const isForSelf = completingFor === "myself";
+  const subjectPronoun = isForSelf ? "Your" : `${firstName}'s`;
+  const objectPronoun = isForSelf ? "your" : "their";
+  
+  // Use our new medicaid planning algorithm
   const {
     totalAssets,
     countableAssets,
-    excessAssets,
-    halfLoafProtection,
-    minAnnuityProtection,
-    maxAnnuityProtection,
     minProtection,
     maxProtection,
     minPercentage,
     maxPercentage,
-    assetBreakdown
-  } = calculateDetailedAssetData(formData);
+    detailedProtectionPlan,
+    spendDownAmount,
+    planningApproach,
+    planningTimeline,
+    eligibilityAssessment
+  } = medicaidPlanningAlgorithm(formData);
+  
+  const { halfLoafProtection, minAnnuityProtection, maxAnnuityProtection } = detailedProtectionPlan;
+  
+  // Create asset breakdown from previous implementation for continuity
+  const assetBreakdown = [
+    {
+      name: "Primary Residence",
+      value: formData.ownsHome ? parseFloat(formData.homeValue) || 0 : 0,
+      exempt: true
+    },
+    {
+      name: "Liquid Assets (Cash, Savings, Investments)",
+      value: parseFloat(formData.liquidAssets) || 0,
+      exempt: false
+    }
+  ];
+  
+  if (formData.hasRetirementAccounts) {
+    assetBreakdown.push({
+      name: "Retirement Accounts",
+      value: parseFloat(formData.retirementValue) || 0,
+      exempt: false
+    });
+  }
+  
+  if (formData.hasSpouseRetirementAccounts) {
+    assetBreakdown.push({
+      name: "Spouse's Retirement Accounts",
+      value: parseFloat(formData.spouseRetirementValue) || 0,
+      exempt: false
+    });
+  }
+  
+  if (formData.hasLifeInsurance && formData.lifeInsuranceValue !== 'unknown') {
+    assetBreakdown.push({
+      name: "Life Insurance (Cash Value)",
+      value: parseFloat(formData.lifeInsuranceValue) || 0,
+      exempt: false
+    });
+  }
+  
+  if (formData.ownsAdditionalProperty) {
+    const additionalPropertyValue = parseFloat(formData.additionalPropertyValue) || 0;
+    const additionalPropertyMortgageBalance = formData.additionalPropertyMortgage === 'yes' 
+      ? parseFloat(formData.additionalPropertyMortgageBalance) || 0
+      : 0;
+    const additionalPropertyEquity = additionalPropertyValue - additionalPropertyMortgageBalance;
+    
+    assetBreakdown.push({
+      name: "Additional Property",
+      value: additionalPropertyEquity,
+      exempt: false
+    });
+  }
+  
+  // Add primary vehicle as exempt
+  assetBreakdown.push({
+    name: "Primary Vehicle",
+    value: 0, // Assumed value, typically exempt
+    exempt: true
+  });
+  
+  if (formData.hasVehicles) {
+    assetBreakdown.push({
+      name: "Additional Vehicles/RV/Boat",
+      value: parseFloat(formData.vehiclesValue) || 0,
+      exempt: false
+    });
+  }
 
   return (
     <div className="space-y-6 print:text-black">
@@ -54,12 +130,12 @@ const ProfessionalReport = ({ formData }: ProfessionalReportProps) => {
             
             <div className="flex justify-between items-center">
               <span className="font-semibold">Excess Assets:</span>
-              <span className="text-xl font-bold">${excessAssets.toLocaleString()}</span>
+              <span className="text-xl font-bold">${spendDownAmount.toLocaleString()}</span>
             </div>
             
             <p className="text-sm text-gray-600">
-              After accounting for the Medicaid asset limit for a single person ($2,000), 
-              {displayName} has ${excessAssets.toLocaleString()} in excess countable assets 
+              After accounting for the Medicaid asset limit for a {formData.maritalStatus} person,
+              {isForSelf ? " you have" : ` ${firstName} has`} ${spendDownAmount.toLocaleString()} in excess countable assets 
               that must be managed to achieve Medicaid eligibility.
             </p>
           </div>
@@ -112,7 +188,7 @@ const ProfessionalReport = ({ formData }: ProfessionalReportProps) => {
           <CardContent className="pt-4">
             <p className="text-2xl font-bold mb-2">${halfLoafProtection.toLocaleString()}</p>
             <p className="text-gray-600 text-sm">
-              By using the Reverse Half-a-Loaf strategy, {displayName} can gift half of the countable 
+              By using the Reverse Half-a-Loaf strategy, {isForSelf ? "you" : displayName} can gift half of the countable 
               assets and use the remaining half to cover the costs during the penalty period.
             </p>
           </CardContent>
@@ -129,7 +205,7 @@ const ProfessionalReport = ({ formData }: ProfessionalReportProps) => {
               ${minAnnuityProtection.toLocaleString()} - ${maxAnnuityProtection.toLocaleString()}
             </p>
             <p className="text-gray-600 text-sm">
-              By purchasing a Medicaid-compliant annuity, {displayName} can protect an additional 
+              By purchasing a Medicaid-compliant annuity, {isForSelf ? "you" : displayName} can protect an additional 
               10-20% of the countable assets.
             </p>
           </CardContent>
@@ -175,53 +251,48 @@ const ProfessionalReport = ({ formData }: ProfessionalReportProps) => {
         </CardContent>
       </Card>
 
+      <Card className="shadow-md mt-6">
+        <CardHeader className="bg-purple-50 pb-2">
+          <CardTitle className="text-lg text-purple-700 flex items-center">
+            <ArrowRight className="mr-2 h-5 w-5" /> Recommended Approach
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <p className="text-gray-700 mb-4">{planningApproach}</p>
+          
+          {eligibilityAssessment && (
+            <div className="mt-4 pt-4 border-t">
+              <p className="font-semibold">Planning Urgency: 
+                <span className={`ml-2 ${eligibilityAssessment.planningUrgency.includes("High") ? "text-red-600" : 
+                  eligibilityAssessment.planningUrgency.includes("Medium") ? "text-yellow-600" : "text-green-600"}`}>
+                  {eligibilityAssessment.planningUrgency}
+                </span>
+              </p>
+              <p className="mt-1 text-sm text-gray-600">
+                Next recommended review: {eligibilityAssessment.yearsToReview} {eligibilityAssessment.yearsToReview === 1 ? "year" : "years"}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="mt-8">
-        <h2 className="text-2xl font-bold text-purple-800 mb-4">Recommended Strategies and Actions:</h2>
+        <h2 className="text-2xl font-bold text-purple-800 mb-4">Recommended Action Steps:</h2>
         
         <div className="space-y-6">
-          <div>
-            <h3 className="font-bold text-lg flex items-center">
-              <ArrowRight className="mr-2 h-5 w-5 text-purple-700" /> 
-              Reverse Half-a-Loaf Strategy
-            </h3>
-            <p className="text-gray-600 ml-7">
-              Gifting half of the countable assets and preparing for a penalty period.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="font-bold text-lg flex items-center">
-              <ArrowRight className="mr-2 h-5 w-5 text-purple-700" /> 
-              Medicaid-Compliant Annuity
-            </h3>
-            <p className="text-gray-600 ml-7">
-              Setting up an annuity that complies with Medicaid regulations, ensuring it's 
-              irrevocable, non-assignable, and actuarially sound.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="font-bold text-lg flex items-center">
-              <ArrowRight className="mr-2 h-5 w-5 text-purple-700" /> 
-              Consultation with Elder Law Attorney
-            </h3>
-            <p className="text-gray-600 ml-7">
-              Coordinate all strategies with a professional attorney to ensure compliance 
-              with {state || "your state"}'s Medicaid rules.
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="font-bold text-lg flex items-center">
-              <ArrowRight className="mr-2 h-5 w-5 text-purple-700" /> 
-              Documentation
-            </h3>
-            <p className="text-gray-600 ml-7">
-              Maintain detailed documentation of every transaction, especially for annuity 
-              and asset conversion strategies, to ensure the eligibility application is clear 
-              and fully supported.
-            </p>
-          </div>
+          {planningTimeline.map((step, index) => (
+            <div key={index}>
+              <h3 className="font-bold text-lg flex items-center">
+                <ArrowRight className="mr-2 h-5 w-5 text-purple-700" /> 
+                {step}
+              </h3>
+              <p className="text-gray-600 ml-7">
+                {index === 0 ? "Begin by gathering all financial statements, property deeds, and income documentation." : 
+                 index === 1 ? "Work with your advisor to prioritize which assets to protect first." :
+                 ""}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
