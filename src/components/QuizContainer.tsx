@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import QuizForm from "./QuizForm";
@@ -8,8 +9,12 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Steps, Step } from "@/components/ui/steps";
 
-const QuizContainer = () => {
-  const [showQuiz, setShowQuiz] = useState(false);
+interface QuizContainerProps {
+  initialStage?: "hero" | "quiz";
+}
+
+const QuizContainer = ({ initialStage = "hero" }: QuizContainerProps) => {
+  const [showQuiz, setShowQuiz] = useState(initialStage === "quiz");
   const [progress, setProgress] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [formData, setFormData] = useState<any>(null);

@@ -1,8 +1,8 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import QuizContainer from "@/components/QuizContainer";
+import { useState } from "react";
 
 const Hero = () => {
   const [showQuiz, setShowQuiz] = useState(false);
@@ -13,7 +13,7 @@ const Hero = () => {
   };
 
   if (showQuiz) {
-    return <QuizContainer />;
+    return <QuizContainer initialStage="quiz" />;
   }
 
   return (

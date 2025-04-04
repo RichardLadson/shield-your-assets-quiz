@@ -1,6 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -41,15 +42,29 @@ const Step1Introduction = ({
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Welcome! Let's Get Started</h2>
 
+      <div className="flex items-start space-x-4 mb-6">
+        <Avatar className="h-16 w-16 border-2 border-purple-200">
+          <AvatarImage src="/lovable-uploads/a4580117-1664-4485-8726-47c1f0c0471e.png" alt="Medicaid Planning Specialist" />
+          <AvatarFallback className="bg-purple-100 text-purple-600 text-lg">MP</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <p className="text-gray-700 text-lg">
+            Hi there! I'm your Medicaid planning specialist. The information you provide helps me personalize 
+            this assessment specifically for your situation.
+          </p>
+        </div>
+      </div>
+
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">Hi there! 👋 What's your first name?</Label>
+          <Label htmlFor="firstName">What's your first name?</Label>
           <Input
             id="firstName"
             value={firstName}
             onChange={(e) => onChange({ firstName: e.target.value })}
             placeholder="Enter your first name"
             className="w-full"
+            autoFocus
           />
         </div>
 
