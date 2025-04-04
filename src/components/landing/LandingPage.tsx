@@ -14,11 +14,11 @@ const LandingPage = ({ onStartQuiz }: LandingPageProps) => {
         {/* Hero Section */}
         <Hero onStartQuiz={onStartQuiz} />
         
-        {/* Framework Section */}
-        <Framework />
-        
         {/* About Me Section */}
         <AboutMe />
+        
+        {/* Framework Section */}
+        <Framework />
       </div>
     </div>
   );
