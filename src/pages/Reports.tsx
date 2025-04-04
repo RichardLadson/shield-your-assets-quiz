@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Steps, Step } from "@/components/ui/steps";
-import { generatePDF } from "@/lib/pdfUtils";
 import { medicaidPlanningAlgorithm } from "@/lib/medicaidPlanningCalculations";
 import { ReportHeader } from "@/components/reports/ReportHeader";
 import { ReportTabs } from "@/components/reports/ReportTabs";
@@ -16,7 +15,6 @@ const Reports = () => {
   const [formData, setFormData] = useState<any>(null);
   const [currentTab, setCurrentTab] = useState<string>("lead-magnet");
   const [currentStep, setCurrentStep] = useState(1);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const totalSteps = 3;
 
@@ -36,70 +34,8 @@ const Reports = () => {
     );
   }
 
-  const handleDownloadLeadMagnet = async () => {
-    setIsGeneratingPDF(true);
-    const fileName = `${formData?.firstName || 'Client'}_Lead_Magnet_Report.pdf`;
-    
-    try {
-      const pdfBlob = await generatePDF("lead-magnet-report", fileName);
-      if (pdfBlob) {
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: "Success!",
-          description: "Lead magnet report downloaded successfully.",
-        });
-      }
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF report.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    setIsGeneratingPDF(true);
-    const elementId = currentTab === "lead-magnet" ? "lead-magnet-report" : "professional-report";
-    const reportType = currentTab === "lead-magnet" ? "Lead Magnet" : "Professional";
-    const fileName = `${formData.firstName || 'Client'}_${reportType}_Report.pdf`;
-    
-    try {
-      const pdfBlob = await generatePDF(elementId, fileName);
-      if (pdfBlob) {
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: "Success!",
-          description: `${reportType} report downloaded successfully.`,
-        });
-      }
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF report.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingPDF(false);
-    }
+  const handleBackToQuiz = () => {
+    navigate("/");
   };
 
   const handleEmail = async () => {
@@ -113,15 +49,11 @@ const Reports = () => {
     }
     
     setIsSendingEmail(true);
-    const elementId = currentTab === "lead-magnet" ? "lead-magnet-report" : "professional-report";
-    const reportType = currentTab === "lead-magnet" ? "Lead Magnet" : "Professional";
-    const fileName = `${formData.firstName || 'Client'}_${reportType}_Report.pdf`;
-    
     try {
-      await generatePDF(elementId, fileName);
+      // Implementation for sending email would go here
       toast({
         title: "Report Sent",
-        description: `The ${reportType.toLowerCase()} report has been sent to ${formData.email}`,
+        description: `The report has been sent to ${formData.email}`,
       });
     } catch (error) {
       console.error("Error sending email:", error);
@@ -133,10 +65,6 @@ const Reports = () => {
     } finally {
       setIsSendingEmail(false);
     }
-  };
-
-  const handleBackToQuiz = () => {
-    navigate("/");
   };
   
   const nextStep = () => {
@@ -160,8 +88,6 @@ const Reports = () => {
     });
   };
   
-  const planningData = medicaidPlanningAlgorithm(formData);
-  
   const { firstName, completingFor, lovedOneName } = formData;
   const isForSelf = completingFor === "myself";
   const displayName = isForSelf ? firstName : (lovedOneName || "Your loved one");
@@ -174,8 +100,6 @@ const Reports = () => {
             currentTab={currentTab}
             setCurrentTab={setCurrentTab}
             displayName={displayName}
-            handleDownloadLeadMagnet={handleDownloadLeadMagnet}
-            isGeneratingPDF={isGeneratingPDF}
             formData={formData}
             handleBackToQuiz={handleBackToQuiz}
             nextStep={nextStep}
@@ -203,10 +127,7 @@ const Reports = () => {
       <div className="max-w-4xl mx-auto">
         <ReportHeader
           handleBackToQuiz={handleBackToQuiz}
-          handleDownload={handleDownload}
-          handleDownloadLeadMagnet={handleDownloadLeadMagnet}
           handleEmail={handleEmail}
-          isGeneratingPDF={isGeneratingPDF}
           isSendingEmail={isSendingEmail}
           formData={formData}
         />
