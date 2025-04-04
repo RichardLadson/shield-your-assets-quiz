@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicaid Quiz Embed Example</title>
+  <link rel="stylesheet" href="/dist/assets/index.css">
+</head>
+<body>
+  <div style="max-width: 800px; margin: 100px auto; text-align: center;">
+    <h1>Example Website</h1>
+    <p>This is an example of how to embed the Medicaid Quiz on any website.</p>
+    
+    <!-- Example of embedding the quiz with default styling -->
+    <div class="medicaid-quiz-embed"></div>
+    
+    <!-- Example of embedding the quiz with custom button text -->
+    <div 
+      class="medicaid-quiz-embed" 
+      data-button-text="Take the Medicaid Assessment"
+    ></div>
+    
+    <!-- Example of embedding the quiz with custom CSS class -->
+    <div 
+      class="medicaid-quiz-embed" 
+      data-button-text="Start Planning Now" 
+      data-button-class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    ></div>
+  </div>
+  
+  <!-- Load the embed script after defining containers -->
+  <script src="/dist/assets/embed.js"></script>
+</body>
+</html>
