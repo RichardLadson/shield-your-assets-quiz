@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import LeadMagnetReport from "./LeadMagnetReport";
 import ProfessionalReport from "./ProfessionalReport";
 
@@ -10,8 +9,6 @@ interface ReportTabsProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
   displayName: string;
-  handleDownloadLeadMagnet: () => Promise<void>;
-  isGeneratingPDF: boolean;
   formData: any;
   handleBackToQuiz: () => void;
   nextStep: () => void;
@@ -21,8 +18,6 @@ export const ReportTabs = ({
   currentTab,
   setCurrentTab,
   displayName,
-  handleDownloadLeadMagnet,
-  isGeneratingPDF,
   formData,
   handleBackToQuiz,
   nextStep
@@ -52,21 +47,6 @@ export const ReportTabs = ({
             <TabsContent value="lead-magnet" className="mt-0">
               <div id="lead-magnet-report">
                 <LeadMagnetReport formData={formData} />
-              </div>
-              <div className="flex justify-center mt-6">
-                <Button 
-                  onClick={handleDownloadLeadMagnet} 
-                  variant="success"
-                  className="flex items-center"
-                  disabled={isGeneratingPDF}
-                >
-                  {isGeneratingPDF ? "Generating PDF..." : (
-                    <>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download Lead Magnet PDF
-                    </>
-                  )}
-                </Button>
               </div>
             </TabsContent>
             <TabsContent value="professional" className="mt-0">

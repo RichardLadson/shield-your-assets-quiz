@@ -1,24 +1,14 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { medicaidPlanningAlgorithm } from "@/lib/medicaidPlanningCalculations";
-import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
-import { generatePDF, emailPDFToUser } from "@/lib/pdfUtils";
 import { AssetCards } from "./lead-magnet/AssetCards";
 import { RecommendedApproach } from "./lead-magnet/RecommendedApproach";
-import { ActionButtons } from "./lead-magnet/ActionButtons";
 
 interface LeadMagnetReportProps {
   formData: any;
-  pdfWebhookUrl?: string;
 }
 
-const LeadMagnetReport = ({ formData, pdfWebhookUrl }: LeadMagnetReportProps) => {
+const LeadMagnetReport = ({ formData }: LeadMagnetReportProps) => {
   const { firstName, lastName, completingFor, email } = formData;
   const displayName = firstName || "Friend";
-  const { toast } = useToast();
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
   
   // Determine who the report is about
   const isForSelf = completingFor === "myself";
@@ -37,95 +27,6 @@ const LeadMagnetReport = ({ formData, pdfWebhookUrl }: LeadMagnetReportProps) =>
     planningApproach
   } = medicaidPlanningAlgorithm(formData);
   
-  const handleGeneratePDF = async () => {
-    setIsGeneratingPDF(true);
-    try {
-      const fileName = `${firstName || 'Client'}_Lead_Magnet_Report.pdf`;
-      const pdfBlob = await generatePDF("lead-magnet-pdf-content", fileName);
-      
-      if (pdfBlob) {
-        // Create a download link
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: "Success!",
-          description: "Lead magnet report downloaded successfully.",
-        });
-      }
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF report.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
-  
-  const handleEmailPDF = async () => {
-    if (!email) {
-      toast({
-        title: "Email Required",
-        description: "An email address is needed to send the report.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!pdfWebhookUrl) {
-      toast({
-        title: "Configuration Required",
-        description: "Email sending is not configured.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsSendingEmail(true);
-    try {
-      const pdfBlob = await generatePDF("lead-magnet-pdf-content", `${firstName || 'Client'}_Lead_Magnet_Report.pdf`);
-      if (pdfBlob) {
-        // Send the PDF via webhook
-        const success = await emailPDFToUser(
-          pdfBlob,
-          email,
-          `Your Medicaid Planning Report for ${firstName || 'You'}`,
-          pdfWebhookUrl
-        );
-        
-        if (success) {
-          toast({
-            title: "Report Sent",
-            description: `The report has been sent to ${email}`,
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to send the report. Please try again later.",
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error sending email:", error);
-      toast({
-        title: "Error",
-        description: "Failed to send the report via email.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSendingEmail(false);
-    }
-  };
-
   return (
     <div className="space-y-6 print:text-black">
       <div id="lead-magnet-pdf-content">
@@ -166,15 +67,6 @@ const LeadMagnetReport = ({ formData, pdfWebhookUrl }: LeadMagnetReportProps) =>
           </p>
         </div>
       </div>
-      
-      <ActionButtons
-        handleGeneratePDF={handleGeneratePDF}
-        handleEmailPDF={handleEmailPDF}
-        isGeneratingPDF={isGeneratingPDF}
-        isSendingEmail={isSendingEmail}
-        email={email}
-        pdfWebhookUrl={pdfWebhookUrl}
-      />
     </div>
   );
 };
