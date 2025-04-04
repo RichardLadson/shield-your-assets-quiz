@@ -236,7 +236,11 @@ const Reports = () => {
                 </Tabs>
               </CardContent>
             </Card>
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-between mt-6">
+              <Button variant="outline" onClick={handleBackToQuiz} className="flex items-center">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Quiz
+              </Button>
               <Button onClick={nextStep} className="flex items-center bg-purple-600 hover:bg-purple-700">
                 Next: Schedule Consultation
               </Button>
@@ -427,17 +431,22 @@ const Reports = () => {
           </div>
         </div>
         
-        {urgencyLevel.includes("High") && (
-          <Card className="mb-6 border-red-300 bg-red-50">
-            <CardContent className="p-4 flex items-center">
-              <AlertTriangle className="text-red-500 mr-3 h-5 w-5" />
-              <p className="text-red-700">
-                <span className="font-semibold">High Planning Urgency:</span> {displayName}'s situation requires immediate Medicaid planning attention. 
-                Please consult with a Medicaid planner as soon as possible.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        <div className="mb-6 flex justify-center">
+          <Button 
+            onClick={handleDownloadLeadMagnet} 
+            variant="success"
+            size="lg"
+            className="flex items-center"
+            disabled={isGeneratingPDF}
+          >
+            {isGeneratingPDF ? "Generating Lead Magnet PDF..." : (
+              <>
+                <Download className="mr-2 h-5 w-5" />
+                Download Lead Magnet Report PDF
+              </>
+            )}
+          </Button>
+        </div>
         
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">

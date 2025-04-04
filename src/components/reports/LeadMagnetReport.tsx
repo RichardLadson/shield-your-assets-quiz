@@ -41,13 +41,15 @@ const LeadMagnetReport = ({ formData, pdfWebhookUrl }: LeadMagnetReportProps) =>
   const handleGeneratePDF = async () => {
     setIsGeneratingPDF(true);
     try {
-      const pdfBlob = await generatePDF("lead-magnet-pdf-content", `${firstName || 'Client'}_Lead_Magnet_Report.pdf`);
+      const fileName = `${firstName || 'Client'}_Lead_Magnet_Report.pdf`;
+      const pdfBlob = await generatePDF("lead-magnet-pdf-content", fileName);
+      
       if (pdfBlob) {
         // Create a download link
         const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${firstName || 'Client'}_Lead_Magnet_Report.pdf`;
+        link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -234,23 +236,23 @@ const LeadMagnetReport = ({ formData, pdfWebhookUrl }: LeadMagnetReportProps) =>
         </div>
       </div>
       
-      {/* PDF actions - these won't be included in the PDF itself */}
-      {email && pdfWebhookUrl && (
-        <div className="flex justify-center space-x-4 mt-6 print:hidden">
-          <Button
-            onClick={handleGeneratePDF}
-            variant="outline"
-            className="flex items-center"
-            disabled={isGeneratingPDF}
-          >
-            {isGeneratingPDF ? "Generating..." : (
-              <>
-                <Download className="mr-2 h-4 w-4" />
-                Download Report PDF
-              </>
-            )}
-          </Button>
-          
+      {/* Make this button always visible */}
+      <div className="flex justify-center space-x-4 mt-6 print:hidden">
+        <Button
+          onClick={handleGeneratePDF}
+          variant="success"
+          className="flex items-center"
+          disabled={isGeneratingPDF}
+        >
+          {isGeneratingPDF ? "Generating..." : (
+            <>
+              <Download className="mr-2 h-4 w-4" />
+              Download Lead Magnet PDF
+            </>
+          )}
+        </Button>
+        
+        {email && pdfWebhookUrl && (
           <Button
             onClick={handleEmailPDF}
             variant="outline"
@@ -264,8 +266,8 @@ const LeadMagnetReport = ({ formData, pdfWebhookUrl }: LeadMagnetReportProps) =>
               </>
             )}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

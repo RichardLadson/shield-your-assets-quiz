@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import QuizForm from "./QuizForm";
 import Hero from "./Hero";
 import LeadMagnetReport from "./reports/LeadMagnetReport";
-import { CheckCircle, ArrowLeft, ArrowRight, CalendarClock, FileCheck, CheckCircle2 } from "lucide-react";
+import { CheckCircle, ArrowLeft, ArrowRight, CalendarClock, FileCheck, CheckCircle2, Download } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Steps, Step } from "@/components/ui/steps";
