@@ -1,8 +1,8 @@
 
-import QuizContainer from "@/components/QuizContainer";
+import LandingPage from "@/components/landing/LandingPage";
 
 const Index = () => {
-  return <QuizContainer />;
+  return <LandingPage />;
 };
 
 export default Index;
