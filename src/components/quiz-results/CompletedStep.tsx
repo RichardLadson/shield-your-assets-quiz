@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, CalendarClock, FileCheck, CheckCircle2 } from "lucide-react";
@@ -11,7 +10,6 @@ interface CompletedStepProps {
   prevStep: () => void;
   startNewQuiz: () => void;
   scheduleAppointment: () => void;
-  pdfWebhookUrl?: string;
 }
 
 export const CompletedStep = ({
@@ -21,7 +19,6 @@ export const CompletedStep = ({
   prevStep,
   startNewQuiz,
   scheduleAppointment,
-  pdfWebhookUrl
 }: CompletedStepProps) => {
   const { firstName, completingFor, lovedOneName } = formData || {};
   const isForSelf = completingFor === "yourself";
@@ -38,7 +35,7 @@ export const CompletedStep = ({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <LeadMagnetReport formData={formData} pdfWebhookUrl={pdfWebhookUrl} />
+            <LeadMagnetReport formData={formData} />
             
             <div className="flex justify-end">
               <Button onClick={nextStep} className="flex items-center bg-purple-600 hover:bg-purple-700">
