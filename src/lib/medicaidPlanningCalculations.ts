@@ -1,204 +1,25 @@
+
 /**
  * Medicaid Planning Calculations
  * Adapted from Python logic to TypeScript for web application use
+ * Refactored into multiple files for better organization
  */
-import { getStateRules, StateRule } from "@/data/stateRules";
+import { getStateRules } from "@/data/stateRules";
+import { parseNumber } from "./utils/medicaidUtils";
+import { assessMedicareCoverage } from "./medicaid/medicareCoverage";
+import { assessFacilityMedicaidCompatibility } from "./medicaid/facilityAssessment";
+import { calculateSpendDown, calculateTransferPenalty } from "./medicaid/assetCalculations";
+import { isMillerTrustRequired } from "./medicaid/incomeCalculations";
+import { medicaidEligibilityAssessment } from "./medicaid/eligibilityAssessment";
 
-// Helper function to parse number from form data (reused from reportCalculations.ts)
-const parseNumber = (value: string): number => {
-  if (!value) return 0;
-  if (value === "unknown") return 0;
-  
-  // Remove any non-numeric characters except decimal points
-  const sanitizedValue = value.replace(/[^0-9.]/g, '');
-  return parseFloat(sanitizedValue) || 0;
-};
-
-/**
- * Assess whether the client is eligible for Medicare coverage.
- * Eligibility is based on having had a recent hospital stay and requiring skilled care.
- */
-export const assessMedicareCoverage = (clientInfo: any) => {
-  if (clientInfo.recentHospitalStay && clientInfo.requiresSkilledCare) {
-    return {
-      eligibleForMedicare: true,
-      potentialCoverageDays: 100,
-      fullCoverageDays: 20,
-      coInsuranceDays: 80,
-      coInsuranceRate: 200  // Example rate; update annually as needed
-    };
-  }
-  return { eligibleForMedicare: false };
-};
-
-/**
- * Check whether the chosen facility is Medicaid-certified and determine
- * if it has available Medicaid beds along with any private pay requirements.
- */
-export const assessFacilityMedicaidCompatibility = (facilityInfo: any) => {
-  if (!facilityInfo) {
-    return { warning: "Facility information not provided. Unable to assess Medicaid compatibility." };
-  }
-  
-  return {
-    isMedicaidCertified: facilityInfo.isMedicaidCertified || false,
-    hasAvailableMedicaidBed: facilityInfo.hasAvailableMedicaidBed || false,
-    privatePayRequirement: facilityInfo.privatePayRequirement || 0  // in months
-  };
-};
-
-/**
- * Calculate the spend-down amount required to reach Medicaid eligibility.
- * Countable assets exclude exempt assets such as home, vehicle, burial plot, and life insurance.
- */
-export const calculateSpendDown = (assets: Record<string, number>, stateRules: StateRule, maritalStatus: string): number => {
-  const countableAssets = Object.entries(assets)
-    .filter(([asset]) => !['home', 'vehicle', 'burial_plot', 'life_insurance'].includes(asset))
-    .reduce((sum, [_, value]) => sum + value, 0);
-  
-  let resourceLimit;
-  
-  if (maritalStatus === 'married-both') {
-    // Both spouses applying for Medicaid
-    resourceLimit = stateRules.resourceLimitCoupleSharing;
-  } else if (maritalStatus === 'married-one') {
-    // Only one spouse applying, use the married resource limit
-    resourceLimit = stateRules.resourceLimitMarried;
-  } else {
-    // Single applicant (includes single, widowed, divorced)
-    resourceLimit = stateRules.resourceLimitSingle;
-  }
-  
-  return Math.max(0, countableAssets - resourceLimit);
-};
-
-/**
- * Determine if a Miller Trust (Qualified Income Trust) is required
- * based on state requirements and applicant's income.
- */
-export const isMillerTrustRequired = (stateRules: StateRule, monthlyIncome: number): boolean => {
-  return stateRules.requiresMillerTrust && monthlyIncome > stateRules.millerTrustThreshold;
-};
-
-/**
- * Calculate penalty period for improper transfers during lookback period.
- */
-export const calculateTransferPenalty = (
-  transferAmount: number, 
-  stateRules: StateRule
-): number => {
-  if (transferAmount <= 0) return 0;
-  const months = transferAmount / stateRules.penaltyDivisor;
-  return Math.ceil(months * 100) / 100; // Round up to 2 decimal places
-};
-
-/**
- * Assess Medicaid eligibility by classifying assets, calculating spend-down,
- * and determining monthly copay estimates and overall planning urgency.
- */
-export const medicaidEligibilityAssessment = (
-  clientInfo: any, 
-  assets: Record<string, number>, 
-  income: Record<string, number>, 
-  maritalStatus: string, 
-  state: string, 
-  age: number, 
-  healthStatus: string,
-  isCrisis = false
-) => {
-  // Get state-specific rules
-  const stateRules = getStateRules(state);
-  
-  // Determine appropriate resource limit based on marital status
-  let resourceLimit;
-  if (maritalStatus === 'married-both') {
-    resourceLimit = stateRules.resourceLimitCoupleSharing;
-  } else if (maritalStatus === 'married-one') {
-    resourceLimit = stateRules.resourceLimitMarried;
-  } else {
-    resourceLimit = stateRules.resourceLimitSingle;
-  }
-  
-  // Classify assets into countable and non-countable categories
-  const countableAssets = Object.entries(assets)
-    .filter(([asset]) => !['home', 'vehicle', 'burial_plot', 'life_insurance'].includes(asset))
-    .reduce((sum, [_, value]) => sum + value, 0);
-  
-  const nonCountableAssets = Object.entries(assets)
-    .filter(([asset]) => ['home', 'vehicle', 'burial_plot', 'life_insurance'].includes(asset))
-    .reduce((sum, [_, value]) => sum + value, 0);
-  
-  const spenddownAmount = Math.max(0, countableAssets - resourceLimit);
-  const totalIncome = Object.values(income).reduce((sum, value) => sum + value, 0);
-  
-  // For married applicants, determine patient income after preserving spousal income
-  let patientIncome;
-  if (maritalStatus === 'married-one') {
-    // Use state-specific spousal impoverishment protections
-    const spousalIncomeNeeds = Math.min(
-      stateRules.spousalImpoverishmentIncome.maximumMonthlyMaintenanceNeeds,
-      Math.max(stateRules.spousalImpoverishmentIncome.minimumMonthlyMaintenanceNeeds, totalIncome)
-    );
-    patientIncome = Math.max(0, totalIncome - spousalIncomeNeeds);
-  } else {
-    patientIncome = totalIncome;
-  }
-  
-  // Check if Miller Trust is required
-  const millerTrustRequired = isMillerTrustRequired(stateRules, patientIncome);
-  
-  // Estimate monthly copay after subtracting a personal expense allowance
-  const copayEstimate = Math.max(0, patientIncome - stateRules.personalNeedsAllowance);
-  
-  // Home equity considerations
-  const homeValue = assets.home || 0;
-  const homeEquityExemption = Math.min(homeValue, stateRules.homeEquityLimit);
-  const homeEquityExcess = Math.max(0, homeValue - stateRules.homeEquityLimit);
-  
-  // Determine planning urgency based on age, health status, and crisis flag
-  let urgency;
-  if (isCrisis || healthStatus === 'critical' || age >= 80) {
-    urgency = "High - Immediate crisis planning required";
-  } else if (healthStatus === 'declining' || age >= 70) {
-    urgency = "Medium - Begin pre-planning soon";
-  } else {
-    urgency = "Low - Good candidate for long-term pre-planning";
-  }
-  
-  // Calculate how many years until the next review (based on age)
-  const yearsTo65 = Math.max(0, 65 - age);
-  const yearsToReview = Math.min(5, Math.max(1, Math.floor(yearsTo65 / 2)));
-  
-  let recommendedApproach;
-  if (spenddownAmount <= 0) {
-    recommendedApproach = "No asset spend-down needed. Focus on application and verification process.";
-  } else if (spenddownAmount > 500000) {
-    recommendedApproach = "Consider self-funding strategy. Restructure portfolio to maximize income.";
-  } else {
-    recommendedApproach = "Develop asset protection plan for Medicaid eligibility.";
-  }
-  
-  return {
-    totalAssets: countableAssets + nonCountableAssets,
-    countableAssets,
-    nonCountableAssets,
-    spenddownAmount,
-    estimatedMonthlyCopay: copayEstimate,
-    recommendedApproach,
-    planningUrgency: urgency,
-    yearsToReview,
-    millerTrustRequired,
-    homeEquityExcess,
-    stateSpecificDetails: {
-      state,
-      homeEquityExemption,
-      homeEquityLimit: stateRules.homeEquityLimit,
-      personalNeedsAllowance: stateRules.personalNeedsAllowance,
-      lookBackPeriod: stateRules.lookBackPeriod,
-      penaltyDivisor: stateRules.penaltyDivisor,
-      averageNursingHomeCost: stateRules.averageNursingHomeCost
-    }
-  };
+// Re-export functions that were previously directly in this file
+export {
+  assessMedicareCoverage,
+  assessFacilityMedicaidCompatibility,
+  calculateSpendDown,
+  calculateTransferPenalty,
+  isMillerTrustRequired,
+  medicaidEligibilityAssessment
 };
 
 /**
