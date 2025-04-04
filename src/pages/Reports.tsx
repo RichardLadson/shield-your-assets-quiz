@@ -1,15 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LeadMagnetReport from "@/components/reports/LeadMagnetReport";
-import ProfessionalReport from "@/components/reports/ProfessionalReport";
-import { ArrowLeft, Download, Mail, AlertTriangle, CalendarClock, FileCheck, CheckCircle2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { medicaidPlanningAlgorithm } from "@/lib/medicaidPlanningCalculations";
-import { Steps, Step } from "@/components/ui/steps";
-import { generatePDF, emailPDFToUser } from "@/lib/pdfUtils";
 import { useToast } from "@/components/ui/use-toast";
+import { Steps, Step } from "@/components/ui/steps";
+import { generatePDF } from "@/lib/pdfUtils";
+import { medicaidPlanningAlgorithm } from "@/lib/medicaidPlanningCalculations";
+import { ReportHeader } from "@/components/reports/ReportHeader";
+import { ReportTabs } from "@/components/reports/ReportTabs";
+import { ReportSteps } from "@/components/reports/ReportSteps";
 
 const Reports = () => {
   const location = useLocation();
@@ -21,9 +19,6 @@ const Reports = () => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const totalSteps = 3;
-  
-  const leadMagnetRef = useRef<HTMLDivElement>(null);
-  const professionalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (location.state?.formData) {
@@ -121,17 +116,13 @@ const Reports = () => {
     const elementId = currentTab === "lead-magnet" ? "lead-magnet-report" : "professional-report";
     const reportType = currentTab === "lead-magnet" ? "Lead Magnet" : "Professional";
     const fileName = `${formData.firstName || 'Client'}_${reportType}_Report.pdf`;
-    const subject = `Your Medicaid Planning ${reportType} Report`;
     
     try {
-      const pdfBlob = await generatePDF(elementId, fileName);
-      
-      if (pdfBlob) {
-        toast({
-          title: "Report Sent",
-          description: `The ${reportType.toLowerCase()} report has been sent to ${formData.email}`,
-        });
-      }
+      await generatePDF(elementId, fileName);
+      toast({
+        title: "Report Sent",
+        description: `The ${reportType.toLowerCase()} report has been sent to ${formData.email}`,
+      });
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
@@ -170,12 +161,6 @@ const Reports = () => {
   };
   
   const planningData = medicaidPlanningAlgorithm(formData);
-  const urgencyLevel = planningData.eligibilityAssessment?.planningUrgency || "";
-  
-  const urgencyColor = 
-    urgencyLevel.includes("High") ? "text-red-600" : 
-    urgencyLevel.includes("Medium") ? "text-yellow-600" : 
-    "text-green-600";
   
   const { firstName, completingFor, lovedOneName } = formData;
   const isForSelf = completingFor === "myself";
@@ -185,202 +170,28 @@ const Reports = () => {
     switch (currentStep) {
       case 1:
         return (
-          <>
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-2xl text-center">Step 1: Review Your Report</CardTitle>
-                <CardDescription className="text-center">
-                  This report provides a snapshot of {displayName}'s Medicaid planning options
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="lead-magnet">Lead Magnet Report</TabsTrigger>
-                    <TabsTrigger value="professional">Professional Report</TabsTrigger>
-                  </TabsList>
-                  <div className="mt-2 text-sm text-gray-500 text-center">
-                    {currentTab === "lead-magnet" ? (
-                      <p>A simplified overview of {displayName}'s asset protection potential</p>
-                    ) : (
-                      <p>A comprehensive analysis with detailed strategies</p>
-                    )}
-                  </div>
-                  <Card className="mt-6 p-6">
-                    <TabsContent value="lead-magnet" className="mt-0">
-                      <div id="lead-magnet-report">
-                        <LeadMagnetReport formData={formData} />
-                      </div>
-                      <div className="flex justify-center mt-6">
-                        <Button 
-                          onClick={handleDownloadLeadMagnet} 
-                          variant="success"
-                          className="flex items-center"
-                          disabled={isGeneratingPDF}
-                        >
-                          {isGeneratingPDF ? "Generating PDF..." : (
-                            <>
-                              <Download className="mr-2 h-4 w-4" />
-                              Download Lead Magnet PDF
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="professional" className="mt-0">
-                      <div id="professional-report">
-                        <ProfessionalReport formData={formData} />
-                      </div>
-                    </TabsContent>
-                  </Card>
-                </Tabs>
-              </CardContent>
-            </Card>
-            <div className="flex justify-between mt-6">
-              <Button variant="outline" onClick={handleBackToQuiz} className="flex items-center">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Quiz
-              </Button>
-              <Button onClick={nextStep} className="flex items-center bg-purple-600 hover:bg-purple-700">
-                Next: Schedule Consultation
-              </Button>
-            </div>
-          </>
+          <ReportTabs 
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+            displayName={displayName}
+            handleDownloadLeadMagnet={handleDownloadLeadMagnet}
+            isGeneratingPDF={isGeneratingPDF}
+            formData={formData}
+            handleBackToQuiz={handleBackToQuiz}
+            nextStep={nextStep}
+          />
         );
       case 2:
-        return (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-2xl text-center">
-                Step 2: Schedule a Free Consultation
-              </CardTitle>
-              <CardDescription className="text-center">
-                Meet with a Medicaid planning specialist to discuss {displayName}'s options in detail
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-purple-50 p-6 rounded-lg border border-purple-100">
-                <h3 className="text-xl font-semibold text-purple-800 mb-4 flex items-center">
-                  <CalendarClock className="mr-2 h-5 w-5" />
-                  Why Schedule a Consultation?
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Get personalized strategies tailored to {displayName}'s specific situation</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Learn about state-specific Medicaid rules and how they apply</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Discover additional asset protection techniques beyond this report</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Create a timeline for implementing your Medicaid planning strategy</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <div className="flex justify-center">
-                <Button 
-                  onClick={scheduleAppointment} 
-                  size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg rounded-lg flex items-center"
-                >
-                  <CalendarClock className="mr-2 h-5 w-5" />
-                  Schedule Your Free Consultation
-                </Button>
-              </div>
-            </CardContent>
-            <div className="flex justify-between px-6 pb-6">
-              <Button variant="outline" onClick={prevStep}>
-                Back to Report
-              </Button>
-              <Button onClick={nextStep}>
-                Next: Preparation Steps
-              </Button>
-            </div>
-          </Card>
-        );
       case 3:
         return (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-2xl text-center">
-                Step 3: Prepare for Your Consultation
-              </CardTitle>
-              <CardDescription className="text-center">
-                Follow these steps to make the most of your consultation
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
-                <h3 className="text-xl font-semibold text-blue-800 mb-4 flex items-center">
-                  <FileCheck className="mr-2 h-5 w-5" />
-                  Documents to Gather
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Recent bank statements (last 3 months)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Investment and retirement account statements</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Deeds to any owned properties</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Insurance policies (life, long-term care)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>List of any gifts or transfers made in the last 5 years</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <div className="bg-green-50 p-6 rounded-lg border border-green-100">
-                <h3 className="text-xl font-semibold text-green-800 mb-4 flex items-center">
-                  <CheckCircle2 className="mr-2 h-5 w-5" />
-                  Questions to Consider
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>What are your most important financial priorities?</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Are there specific assets you want to protect for heirs?</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>Have you done any previous estate planning?</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>What is your timeline for potential long-term care needs?</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={prevStep}>
-                  Back to Scheduling
-                </Button>
-                <Button variant="outline" onClick={handleBackToQuiz} className="flex items-center">
-                  Start a New Assessment
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ReportSteps
+            currentStep={currentStep}
+            prevStep={prevStep}
+            nextStep={nextStep}
+            handleBackToQuiz={handleBackToQuiz}
+            scheduleAppointment={scheduleAppointment}
+            displayName={displayName}
+          />
         );
       default:
         return null;
@@ -390,63 +201,15 @@ const Reports = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="outline" 
-            onClick={handleBackToQuiz} 
-            className="flex items-center"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Quiz
-          </Button>
-          
-          <div className="flex space-x-2">
-            <Button 
-              onClick={handleDownload} 
-              className="flex items-center" 
-              disabled={isGeneratingPDF}
-            >
-              {isGeneratingPDF ? "Generating..." : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download PDF
-                </>
-              )}
-            </Button>
-            {formData.email && (
-              <Button 
-                onClick={handleEmail} 
-                variant="outline" 
-                className="flex items-center"
-                disabled={isSendingEmail}
-              >
-                {isSendingEmail ? "Sending..." : (
-                  <>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Email Report
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-        
-        <div className="mb-6 flex justify-center">
-          <Button 
-            onClick={handleDownloadLeadMagnet} 
-            variant="success"
-            size="lg"
-            className="flex items-center"
-            disabled={isGeneratingPDF}
-          >
-            {isGeneratingPDF ? "Generating Lead Magnet PDF..." : (
-              <>
-                <Download className="mr-2 h-5 w-5" />
-                Download Lead Magnet Report PDF
-              </>
-            )}
-          </Button>
-        </div>
+        <ReportHeader
+          handleBackToQuiz={handleBackToQuiz}
+          handleDownload={handleDownload}
+          handleDownloadLeadMagnet={handleDownloadLeadMagnet}
+          handleEmail={handleEmail}
+          isGeneratingPDF={isGeneratingPDF}
+          isSendingEmail={isSendingEmail}
+          formData={formData}
+        />
         
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
