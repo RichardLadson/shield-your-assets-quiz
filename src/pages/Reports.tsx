@@ -22,16 +22,13 @@ const Reports = () => {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const totalSteps = 3;
   
-  // References to the report elements for PDF generation
   const leadMagnetRef = useRef<HTMLDivElement>(null);
   const professionalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Check if form data exists in location state
     if (location.state?.formData) {
       setFormData(location.state.formData);
     } else {
-      // Redirect back to quiz if no data
       navigate("/");
     }
   }, [location.state, navigate]);
@@ -44,6 +41,38 @@ const Reports = () => {
     );
   }
 
+  const handleDownloadLeadMagnet = async () => {
+    setIsGeneratingPDF(true);
+    const fileName = `${formData?.firstName || 'Client'}_Lead_Magnet_Report.pdf`;
+    
+    try {
+      const pdfBlob = await generatePDF("lead-magnet-report", fileName);
+      if (pdfBlob) {
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Success!",
+          description: "Lead magnet report downloaded successfully.",
+        });
+      }
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF report.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   const handleDownload = async () => {
     setIsGeneratingPDF(true);
     const elementId = currentTab === "lead-magnet" ? "lead-magnet-report" : "professional-report";
@@ -53,7 +82,6 @@ const Reports = () => {
     try {
       const pdfBlob = await generatePDF(elementId, fileName);
       if (pdfBlob) {
-        // Create a download link and trigger it
         const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
@@ -96,19 +124,13 @@ const Reports = () => {
     const subject = `Your Medicaid Planning ${reportType} Report`;
     
     try {
-      // First generate the PDF
       const pdfBlob = await generatePDF(elementId, fileName);
       
       if (pdfBlob) {
-        // Send the PDF via email
-        // In a real implementation, this would connect to your email service
         toast({
           title: "Report Sent",
           description: `The ${reportType.toLowerCase()} report has been sent to ${formData.email}`,
         });
-        
-        // In a real implementation, you would set up a webhook URL to handle the email sending
-        // For now we'll just show a success message
       }
     } catch (error) {
       console.error("Error sending email:", error);
@@ -141,18 +163,15 @@ const Reports = () => {
   };
   
   const scheduleAppointment = () => {
-    // This would connect to a scheduling service or show a contact form
     toast({
       title: "Scheduling",
       description: "Opening scheduling calendar...",
     });
   };
   
-  // Calculate planning data
   const planningData = medicaidPlanningAlgorithm(formData);
   const urgencyLevel = planningData.eligibilityAssessment?.planningUrgency || "";
   
-  // Determine urgency color
   const urgencyColor = 
     urgencyLevel.includes("High") ? "text-red-600" : 
     urgencyLevel.includes("Medium") ? "text-yellow-600" : 
@@ -191,6 +210,21 @@ const Reports = () => {
                     <TabsContent value="lead-magnet" className="mt-0">
                       <div id="lead-magnet-report">
                         <LeadMagnetReport formData={formData} />
+                      </div>
+                      <div className="flex justify-center mt-6">
+                        <Button 
+                          onClick={handleDownloadLeadMagnet} 
+                          variant="success"
+                          className="flex items-center"
+                          disabled={isGeneratingPDF}
+                        >
+                          {isGeneratingPDF ? "Generating PDF..." : (
+                            <>
+                              <Download className="mr-2 h-4 w-4" />
+                              Download Lead Magnet PDF
+                            </>
+                          )}
+                        </Button>
                       </div>
                     </TabsContent>
                     <TabsContent value="professional" className="mt-0">
