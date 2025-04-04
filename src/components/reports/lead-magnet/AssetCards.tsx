@@ -30,7 +30,7 @@ export const AssetCards = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
       <Card className="shadow-md">
-        <CardHeader className="pb-2 bg-blue-50">
+        <CardHeader className="pb-2 bg-blue-50 h-16 flex items-center">
           <CardTitle className="text-blue-700 flex items-center text-lg">
             <Info className="mr-2 h-5 w-5" /> Total Assets
           </CardTitle>
@@ -47,7 +47,7 @@ export const AssetCards = ({
       </Card>
 
       <Card className="shadow-md">
-        <CardHeader className="pb-2 bg-red-50">
+        <CardHeader className="pb-2 bg-red-50 h-16 flex items-center">
           <CardTitle className="text-red-700 flex items-center text-lg">
             <AlertCircle className="mr-2 h-5 w-5" /> Assets At Risk
           </CardTitle>
@@ -62,7 +62,7 @@ export const AssetCards = ({
       </Card>
 
       <Card className="shadow-md">
-        <CardHeader className="pb-2 bg-green-50">
+        <CardHeader className="pb-2 bg-green-50 h-16 flex items-center">
           <CardTitle className="text-green-700 flex items-center text-lg">
             <ShieldCheck className="mr-2 h-5 w-5" /> Potential Protection
           </CardTitle>
