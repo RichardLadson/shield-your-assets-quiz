@@ -1,4 +1,3 @@
-
 /**
  * Medicaid Planning Calculations
  * Adapted from Python logic to TypeScript for web application use
@@ -57,10 +56,40 @@ export const calculateSpendDown = (assets: Record<string, number>, stateRules: S
     .filter(([asset]) => !['home', 'vehicle', 'burial_plot', 'life_insurance'].includes(asset))
     .reduce((sum, [_, value]) => sum + value, 0);
   
-  const resourceLimit = maritalStatus === 'single' ? 
-    stateRules.resourceLimitSingle : stateRules.resourceLimitMarried;
+  let resourceLimit;
+  
+  if (maritalStatus === 'married-both') {
+    // Both spouses applying for Medicaid
+    resourceLimit = stateRules.resourceLimitCoupleSharing;
+  } else if (maritalStatus === 'married-one') {
+    // Only one spouse applying, use the married resource limit
+    resourceLimit = stateRules.resourceLimitMarried;
+  } else {
+    // Single applicant (includes single, widowed, divorced)
+    resourceLimit = stateRules.resourceLimitSingle;
+  }
   
   return Math.max(0, countableAssets - resourceLimit);
+};
+
+/**
+ * Determine if a Miller Trust (Qualified Income Trust) is required
+ * based on state requirements and applicant's income.
+ */
+export const isMillerTrustRequired = (stateRules: StateRule, monthlyIncome: number): boolean => {
+  return stateRules.requiresMillerTrust && monthlyIncome > stateRules.millerTrustThreshold;
+};
+
+/**
+ * Calculate penalty period for improper transfers during lookback period.
+ */
+export const calculateTransferPenalty = (
+  transferAmount: number, 
+  stateRules: StateRule
+): number => {
+  if (transferAmount <= 0) return 0;
+  const months = transferAmount / stateRules.penaltyDivisor;
+  return Math.ceil(months * 100) / 100; // Round up to 2 decimal places
 };
 
 /**
@@ -80,8 +109,15 @@ export const medicaidEligibilityAssessment = (
   // Get state-specific rules
   const stateRules = getStateRules(state);
   
-  const resourceLimit = maritalStatus === 'single' ? 
-    stateRules.resourceLimitSingle : stateRules.resourceLimitMarried;
+  // Determine appropriate resource limit based on marital status
+  let resourceLimit;
+  if (maritalStatus === 'married-both') {
+    resourceLimit = stateRules.resourceLimitCoupleSharing;
+  } else if (maritalStatus === 'married-one') {
+    resourceLimit = stateRules.resourceLimitMarried;
+  } else {
+    resourceLimit = stateRules.resourceLimitSingle;
+  }
   
   // Classify assets into countable and non-countable categories
   const countableAssets = Object.entries(assets)
@@ -97,7 +133,7 @@ export const medicaidEligibilityAssessment = (
   
   // For married applicants, determine patient income after preserving spousal income
   let patientIncome;
-  if (maritalStatus === 'married') {
+  if (maritalStatus === 'married-one') {
     // Use state-specific spousal impoverishment protections
     const spousalIncomeNeeds = Math.min(
       stateRules.spousalImpoverishmentIncome.maximumMonthlyMaintenanceNeeds,
@@ -108,8 +144,16 @@ export const medicaidEligibilityAssessment = (
     patientIncome = totalIncome;
   }
   
+  // Check if Miller Trust is required
+  const millerTrustRequired = isMillerTrustRequired(stateRules, patientIncome);
+  
   // Estimate monthly copay after subtracting a personal expense allowance
   const copayEstimate = Math.max(0, patientIncome - stateRules.personalNeedsAllowance);
+  
+  // Home equity considerations
+  const homeValue = assets.home || 0;
+  const homeEquityExemption = Math.min(homeValue, stateRules.homeEquityLimit);
+  const homeEquityExcess = Math.max(0, homeValue - stateRules.homeEquityLimit);
   
   // Determine planning urgency based on age, health status, and crisis flag
   let urgency;
@@ -134,11 +178,6 @@ export const medicaidEligibilityAssessment = (
     recommendedApproach = "Develop asset protection plan for Medicaid eligibility.";
   }
   
-  // Additional state-specific considerations
-  const homeEquityExemptionLimit = stateRules.homeEquityLimit;
-  const homeValue = assets.home || 0;
-  const homeEquityExemption = Math.min(homeValue, homeEquityExemptionLimit);
-  
   return {
     totalAssets: countableAssets + nonCountableAssets,
     countableAssets,
@@ -148,12 +187,15 @@ export const medicaidEligibilityAssessment = (
     recommendedApproach,
     planningUrgency: urgency,
     yearsToReview,
+    millerTrustRequired,
+    homeEquityExcess,
     stateSpecificDetails: {
       state,
       homeEquityExemption,
       homeEquityLimit: stateRules.homeEquityLimit,
       personalNeedsAllowance: stateRules.personalNeedsAllowance,
       lookBackPeriod: stateRules.lookBackPeriod,
+      penaltyDivisor: stateRules.penaltyDivisor,
       averageNursingHomeCost: stateRules.averageNursingHomeCost
     }
   };
@@ -193,7 +235,7 @@ export const medicaidPlanningAlgorithm = (
   };
 
   // Set marital status
-  const maritalStatus = formData.maritalStatus === 'married' ? 'married' : 'single';
+  const maritalStatus = formData.maritalStatus || 'single';
   
   // Get state-specific rules
   const state = formData.state?.toLowerCase() || 'default';
@@ -246,6 +288,12 @@ export const medicaidPlanningAlgorithm = (
   const minProtection = Math.round(countableAssets * minProtectionRate);
   const maxProtection = Math.round(countableAssets * maxProtectionRate);
   
+  // Add Miller Trust check
+  const millerTrustRequired = isMillerTrustRequired(
+    stateRules, 
+    parseNumber(formData.monthlyIncome) + parseNumber(formData.spouseMonthlyIncome)
+  );
+  
   return {
     // Basic calculations from existing report
     totalAssets,
@@ -255,12 +303,15 @@ export const medicaidPlanningAlgorithm = (
     minPercentage: Math.round(minProtectionRate * 100),
     maxPercentage: Math.round(maxProtectionRate * 100),
     
-    // New detailed assessment
+    // Enhanced details with new state rules
     eligibilityAssessment: eligibility,
     medicareCoverage: medicare,
     spendDownAmount: spendDown,
     planningApproach,
     planningTimeline,
+    
+    millerTrustRequired,
+    penaltyDivisor: stateRules.penaltyDivisor,
     
     // Calculate more detailed asset protection strategy
     detailedProtectionPlan: {
@@ -276,8 +327,10 @@ export const medicaidPlanningAlgorithm = (
       state: formData.state || 'Unknown',
       resourceLimitSingle: stateRules.resourceLimitSingle,
       resourceLimitMarried: stateRules.resourceLimitMarried,
+      resourceLimitCoupleSharing: stateRules.resourceLimitCoupleSharing,
       homeEquityLimit: stateRules.homeEquityLimit,
       lookBackPeriod: stateRules.lookBackPeriod,
+      penaltyDivisor: stateRules.penaltyDivisor,
       averageNursingHomeCost: stateRules.averageNursingHomeCost
     }
   };

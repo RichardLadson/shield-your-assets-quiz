@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { stateRules } from "@/data/stateRules";
 
 interface Step2Props {
   state: string;
@@ -23,6 +24,16 @@ interface Step2Props {
   }>) => void;
 }
 
+// Create a sorted list of states from our stateRules
+const AVAILABLE_STATES = Object.keys(stateRules)
+  .filter(state => state !== "default")
+  .sort()
+  .map(state => ({
+    value: state,
+    label: state.charAt(0).toUpperCase() + state.slice(1)
+  }));
+
+// Full list of US States for reference (we'll use AVAILABLE_STATES instead)
 const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
   "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
@@ -52,13 +63,23 @@ const Step2BasicDetails = ({ state, age, maritalStatus, firstName, completingFor
               <SelectValue placeholder="Select state" />
             </SelectTrigger>
             <SelectContent>
-              {US_STATES.map((stateName) => (
-                <SelectItem key={stateName} value={stateName.toLowerCase()}>
-                  {stateName}
+              {AVAILABLE_STATES.map((stateObj) => (
+                <SelectItem key={stateObj.value} value={stateObj.value}>
+                  {stateObj.label}
                 </SelectItem>
               ))}
+              <SelectItem value="default">Other States (Default Rules)</SelectItem>
             </SelectContent>
           </Select>
+          {state && state !== "default" && stateRules[state] ? (
+            <p className="text-sm text-gray-500 mt-1">
+              Using specific Medicaid rules for {state.charAt(0).toUpperCase() + state.slice(1)}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500 mt-1">
+              Specific rules not available for this state. Using default guidelines.
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
