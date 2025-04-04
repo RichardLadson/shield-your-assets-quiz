@@ -23,36 +23,6 @@ const Framework = () => {
       title: "Step 4: Alzheimer's Medicaid Assessment",
       description: "Find out if you qualify and what you can do to protect assets before applying.",
       link: "#"
-    },
-    {
-      title: "Step 5: Alzheimer's Medicaid Plan",
-      description: "Create a customized legal and financial plan to qualify for Medicaid and preserve your wealth.",
-      link: "#"
-    },
-    {
-      title: "Step 6: Alzheimer's Action Plan",
-      description: "Turn your plan into action — restructure assets, execute documents, and move toward eligibility.",
-      link: "#"
-    },
-    {
-      title: "Step 7: Alzheimer's Medicaid Application",
-      description: "Submit a clean, complete application that boosts your chances of approval the first time.",
-      link: "#"
-    },
-    {
-      title: "Step 8: Alzheimer's Medicaid Compliance",
-      description: "Stay eligible, avoid audits, and maintain benefits long after approval.",
-      link: "#"
-    },
-    {
-      title: "Step 9: Alzheimer's Asset Protection",
-      description: "Prevent Medicaid estate recovery and safeguard your legacy for future generations.",
-      link: "#"
-    },
-    {
-      title: "Step 10: Alzheimer's Medicaid Fast-Track™",
-      description: "The fast-start process to qualify for Medicaid in as little as 90 days — without losing your savings or home.",
-      link: "#"
     }
   ];
 
@@ -64,7 +34,7 @@ const Framework = () => {
             The Alzheimer's Medicaid Planning Blueprint
           </h2>
           <p className="text-lg md:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            A 10-step strategy designed to help families qualify for Medicaid, protect their assets, 
+            A 4-step strategy designed to help families qualify for Medicaid, protect their assets, 
             and get peace of mind — even while navigating long-term Alzheimer's care.
           </p>
         </div>

@@ -10,12 +10,16 @@ function initializeEmbeds() {
   containers.forEach(container => {
     const buttonText = container.getAttribute('data-button-text') || undefined;
     const buttonClassName = container.getAttribute('data-button-class') || undefined;
+    const crmWebhookUrl = container.getAttribute('data-crm-webhook') || undefined;
+    const pdfWebhookUrl = container.getAttribute('data-pdf-webhook') || undefined;
     
     const root = createRoot(container);
     root.render(
       <EmbeddableQuiz 
         buttonText={buttonText} 
-        buttonClassName={buttonClassName} 
+        buttonClassName={buttonClassName}
+        crmWebhookUrl={crmWebhookUrl}
+        pdfWebhookUrl={pdfWebhookUrl}
       />
     );
   });

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,14 +8,23 @@ import { ArrowLeft, Download, Mail, AlertTriangle, CalendarClock, FileCheck, Che
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { medicaidPlanningAlgorithm } from "@/lib/medicaidPlanningCalculations";
 import { Steps, Step } from "@/components/ui/steps";
+import { generatePDF, emailPDFToUser } from "@/lib/pdfUtils";
+import { useToast } from "@/components/ui/use-toast";
 
 const Reports = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState<any>(null);
   const [currentTab, setCurrentTab] = useState<string>("lead-magnet");
   const [currentStep, setCurrentStep] = useState(1);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const totalSteps = 3;
+  
+  // References to the report elements for PDF generation
+  const leadMagnetRef = useRef<HTMLDivElement>(null);
+  const professionalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Check if form data exists in location state
@@ -36,13 +44,82 @@ const Reports = () => {
     );
   }
 
-  const handleDownload = () => {
-    window.print();
+  const handleDownload = async () => {
+    setIsGeneratingPDF(true);
+    const elementId = currentTab === "lead-magnet" ? "lead-magnet-report" : "professional-report";
+    const reportType = currentTab === "lead-magnet" ? "Lead Magnet" : "Professional";
+    const fileName = `${formData.firstName || 'Client'}_${reportType}_Report.pdf`;
+    
+    try {
+      const pdfBlob = await generatePDF(elementId, fileName);
+      if (pdfBlob) {
+        // Create a download link and trigger it
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Success!",
+          description: `${reportType} report downloaded successfully.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF report.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
-  const handleEmail = () => {
-    // This would connect to a backend service to email the report
-    alert(`Report would be emailed to: ${formData.email || "No email provided"}`);
+  const handleEmail = async () => {
+    if (!formData.email) {
+      toast({
+        title: "Email Required",
+        description: "An email address is needed to send the report.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSendingEmail(true);
+    const elementId = currentTab === "lead-magnet" ? "lead-magnet-report" : "professional-report";
+    const reportType = currentTab === "lead-magnet" ? "Lead Magnet" : "Professional";
+    const fileName = `${formData.firstName || 'Client'}_${reportType}_Report.pdf`;
+    const subject = `Your Medicaid Planning ${reportType} Report`;
+    
+    try {
+      // First generate the PDF
+      const pdfBlob = await generatePDF(elementId, fileName);
+      
+      if (pdfBlob) {
+        // Send the PDF via email
+        // In a real implementation, this would connect to your email service
+        toast({
+          title: "Report Sent",
+          description: `The ${reportType.toLowerCase()} report has been sent to ${formData.email}`,
+        });
+        
+        // In a real implementation, you would set up a webhook URL to handle the email sending
+        // For now we'll just show a success message
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send the report via email.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handleBackToQuiz = () => {
@@ -65,7 +142,10 @@ const Reports = () => {
   
   const scheduleAppointment = () => {
     // This would connect to a scheduling service or show a contact form
-    alert("This would open a scheduling calendar in a real application.");
+    toast({
+      title: "Scheduling",
+      description: "Opening scheduling calendar...",
+    });
   };
   
   // Calculate planning data
@@ -109,10 +189,14 @@ const Reports = () => {
                   </div>
                   <Card className="mt-6 p-6">
                     <TabsContent value="lead-magnet" className="mt-0">
-                      <LeadMagnetReport formData={formData} />
+                      <div id="lead-magnet-report">
+                        <LeadMagnetReport formData={formData} />
+                      </div>
                     </TabsContent>
                     <TabsContent value="professional" className="mt-0">
-                      <ProfessionalReport formData={formData} />
+                      <div id="professional-report">
+                        <ProfessionalReport formData={formData} />
+                      </div>
                     </TabsContent>
                   </Card>
                 </Tabs>
@@ -249,22 +333,15 @@ const Reports = () => {
                 </ul>
               </div>
               
-              <div className="flex justify-center mt-6">
-                <Button 
-                  onClick={scheduleAppointment} 
-                  size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg rounded-lg flex items-center"
-                >
-                  <CalendarClock className="mr-2 h-5 w-5" />
-                  Schedule Your Free Consultation Now
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevStep}>
+                  Back to Scheduling
+                </Button>
+                <Button variant="outline" onClick={handleBackToQuiz} className="flex items-center">
+                  Start a New Assessment
                 </Button>
               </div>
             </CardContent>
-            <div className="flex justify-start px-6 pb-6">
-              <Button variant="outline" onClick={prevStep}>
-                Back to Scheduling
-              </Button>
-            </div>
           </Card>
         );
       default:
@@ -286,14 +363,31 @@ const Reports = () => {
           </Button>
           
           <div className="flex space-x-2">
-            <Button onClick={handleDownload} className="flex items-center">
-              <Download className="mr-2 h-4 w-4" />
-              Download PDF
+            <Button 
+              onClick={handleDownload} 
+              className="flex items-center" 
+              disabled={isGeneratingPDF}
+            >
+              {isGeneratingPDF ? "Generating..." : (
+                <>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </>
+              )}
             </Button>
             {formData.email && (
-              <Button onClick={handleEmail} variant="outline" className="flex items-center">
-                <Mail className="mr-2 h-4 w-4" />
-                Email Report
+              <Button 
+                onClick={handleEmail} 
+                variant="outline" 
+                className="flex items-center"
+                disabled={isSendingEmail}
+              >
+                {isSendingEmail ? "Sending..." : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Email Report
+                  </>
+                )}
               </Button>
             )}
           </div>

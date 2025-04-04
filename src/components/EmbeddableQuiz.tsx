@@ -7,11 +7,15 @@ import { ArrowRight } from "lucide-react";
 interface EmbeddableQuizProps {
   buttonText?: string;
   buttonClassName?: string;
+  crmWebhookUrl?: string;
+  pdfWebhookUrl?: string;
 }
 
 const EmbeddableQuiz = ({ 
   buttonText = "Free Consultation",
-  buttonClassName = "bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 rounded-full text-lg transition-all duration-300 hover:shadow-lg"
+  buttonClassName = "bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 rounded-full text-lg transition-all duration-300 hover:shadow-lg",
+  crmWebhookUrl = "",
+  pdfWebhookUrl = ""
 }: EmbeddableQuizProps) => {
   const [showQuiz, setShowQuiz] = useState(false);
   
@@ -21,7 +25,7 @@ const EmbeddableQuiz = ({
   };
   
   if (showQuiz) {
-    return <QuizContainer initialStage="quiz" />;
+    return <QuizContainer initialStage="quiz" crmWebhookUrl={crmWebhookUrl} pdfWebhookUrl={pdfWebhookUrl} />;
   }
   
   return (

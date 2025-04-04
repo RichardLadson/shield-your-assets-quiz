@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import QuizForm from "./QuizForm";
@@ -11,9 +10,15 @@ import { Steps, Step } from "@/components/ui/steps";
 
 interface QuizContainerProps {
   initialStage?: "hero" | "quiz";
+  crmWebhookUrl?: string;
+  pdfWebhookUrl?: string;
 }
 
-const QuizContainer = ({ initialStage = "hero" }: QuizContainerProps) => {
+const QuizContainer = ({ 
+  initialStage = "hero", 
+  crmWebhookUrl = "",
+  pdfWebhookUrl = "" 
+}: QuizContainerProps) => {
   const [showQuiz, setShowQuiz] = useState(initialStage === "quiz");
   const [progress, setProgress] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
@@ -75,7 +80,7 @@ const QuizContainer = ({ initialStage = "hero" }: QuizContainerProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <LeadMagnetReport formData={formData} />
+              <LeadMagnetReport formData={formData} pdfWebhookUrl={pdfWebhookUrl} />
               
               <div className="flex justify-end">
                 <Button onClick={nextStep} className="flex items-center bg-purple-600 hover:bg-purple-700">
@@ -251,7 +256,14 @@ const QuizContainer = ({ initialStage = "hero" }: QuizContainerProps) => {
           <Progress value={progress} className="mb-8" />
           <QuizForm 
             onProgressUpdate={setProgress} 
-            onComplete={handleQuizComplete}
+            onComplete={(data) => {
+              if (crmWebhookUrl && data) {
+                import('@/lib/pdfUtils').then(module => {
+                  module.sendToGoHighLevel(data, crmWebhookUrl);
+                });
+              }
+              handleQuizComplete(data);
+            }}
           />
         </div>
       )}
