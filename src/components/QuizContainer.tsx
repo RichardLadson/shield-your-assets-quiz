@@ -83,7 +83,6 @@ const QuizContainer = ({
             prevStep={prevStep}
             startNewQuiz={startNewQuiz}
             scheduleAppointment={scheduleAppointment}
-            pdfWebhookUrl={pdfWebhookUrl}
           />
         </div>
       ) : (
