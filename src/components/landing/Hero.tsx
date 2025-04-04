@@ -1,8 +1,21 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import QuizContainer from "@/components/QuizContainer";
 
 const Hero = () => {
+  const [showQuiz, setShowQuiz] = useState(false);
+
+  const startQuiz = () => {
+    setShowQuiz(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (showQuiz) {
+    return <QuizContainer />;
+  }
+
   return (
     <div className="min-h-[90vh] flex flex-col items-center justify-center bg-gradient-to-b from-purple-100 to-white px-4 py-20">
       <div className="max-w-4xl mx-auto text-center">
@@ -17,6 +30,7 @@ const Hero = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 rounded-full text-lg transition-all duration-300 hover:shadow-lg"
+            onClick={startQuiz}
           >
             Free Consultation
             <ArrowRight className="ml-2" />
