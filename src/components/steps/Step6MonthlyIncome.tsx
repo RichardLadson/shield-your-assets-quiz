@@ -1,6 +1,9 @@
 
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Step6Props {
   monthlyIncome: string;
@@ -9,13 +12,27 @@ interface Step6Props {
   firstName?: string;
   completingFor: string;
   lovedOneName?: string;
+  hasDisabledChildren?: boolean;
+  disabledChildrenNames?: string;
   onChange: (data: Partial<{
     monthlyIncome: string;
     spouseMonthlyIncome: string;
+    hasDisabledChildren: boolean;
+    disabledChildrenNames: string;
   }>) => void;
 }
 
-const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus, firstName, completingFor, lovedOneName, onChange }: Step6Props) => {
+const Step6MonthlyIncome = ({ 
+  monthlyIncome, 
+  spouseMonthlyIncome, 
+  maritalStatus, 
+  firstName, 
+  completingFor, 
+  lovedOneName,
+  hasDisabledChildren = false,
+  disabledChildrenNames = "",
+  onChange 
+}: Step6Props) => {
   const isMarried = maritalStatus.startsWith('married');
   const isForSelf = completingFor === "myself";
 
@@ -27,12 +44,12 @@ const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus,
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Monthly Income</h2>
       
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="monthly-income">
             {isForSelf 
-              ? "What's your monthly income?" 
-              : `What's ${subjectName}'s monthly income?`}
+              ? "What's your monthly income from all sources (excluding LTC insurance payments)?" 
+              : `What's ${subjectName}'s monthly income from all sources (excluding LTC insurance payments)?`}
           </Label>
           <div className="relative">
             <span className="absolute left-3 top-2.5 text-gray-500">$</span>
@@ -51,8 +68,8 @@ const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus,
           <div className="space-y-2">
             <Label htmlFor="spouse-monthly-income">
               {isForSelf 
-                ? "How about your spouse's monthly income?" 
-                : `How about ${subjectName}'s spouse's monthly income?`}
+                ? "How about your spouse's monthly income from all sources (excluding LTC insurance payments)?" 
+                : `How about ${subjectName}'s spouse's monthly income from all sources (excluding LTC insurance payments)?`}
             </Label>
             <div className="relative">
               <span className="absolute left-3 top-2.5 text-gray-500">$</span>
@@ -65,6 +82,48 @@ const Step6MonthlyIncome = ({ monthlyIncome, spouseMonthlyIncome, maritalStatus,
                 placeholder="0.00"
               />
             </div>
+          </div>
+        )}
+
+        <div className="space-y-3 pt-2">
+          <Label>
+            {isForSelf 
+              ? "Do you have any disabled children?" 
+              : `Does ${subjectName} have any disabled children?`}
+          </Label>
+          <RadioGroup 
+            value={hasDisabledChildren ? "yes" : "no"}
+            onValueChange={(value) => {
+              onChange({ hasDisabledChildren: value === "yes" });
+              if (value === "no") {
+                onChange({ disabledChildrenNames: "" });
+              }
+            }}
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="disabled-children-yes" />
+              <Label htmlFor="disabled-children-yes">Yes</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="disabled-children-no" />
+              <Label htmlFor="disabled-children-no">No</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {hasDisabledChildren && (
+          <div className="space-y-2">
+            <Label htmlFor="disabled-children-names">
+              Please list the names of the disabled children:
+            </Label>
+            <Textarea
+              id="disabled-children-names"
+              value={disabledChildrenNames}
+              onChange={(e) => onChange({ disabledChildrenNames: e.target.value })}
+              placeholder="Enter the names of the disabled children"
+              className="min-h-[80px]"
+            />
           </div>
         )}
       </div>
