@@ -14,11 +14,15 @@ interface Step6Props {
   lovedOneName?: string;
   hasDisabledChildren?: boolean;
   disabledChildrenNames?: string;
+  livesInNursingHome?: boolean;
+  nursingHomeRate?: string;
   onChange: (data: Partial<{
     monthlyIncome: string;
     spouseMonthlyIncome: string;
     hasDisabledChildren: boolean;
     disabledChildrenNames: string;
+    livesInNursingHome: boolean;
+    nursingHomeRate: string;
   }>) => void;
 }
 
@@ -31,6 +35,8 @@ const Step6MonthlyIncome = ({
   lovedOneName,
   hasDisabledChildren = false,
   disabledChildrenNames = "",
+  livesInNursingHome = false,
+  nursingHomeRate = "",
   onChange 
 }: Step6Props) => {
   const isMarried = maritalStatus.startsWith('married');
@@ -78,6 +84,52 @@ const Step6MonthlyIncome = ({
                 type="text"
                 value={spouseMonthlyIncome}
                 onChange={(e) => onChange({ spouseMonthlyIncome: e.target.value })}
+                className="pl-7"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3 pt-2">
+          <Label>
+            {isForSelf 
+              ? "Do you currently live in a nursing home?" 
+              : `Does ${subjectName} currently live in a nursing home?`}
+          </Label>
+          <RadioGroup 
+            value={livesInNursingHome ? "yes" : "no"}
+            onValueChange={(value) => {
+              onChange({ livesInNursingHome: value === "yes" });
+              if (value === "no") {
+                onChange({ nursingHomeRate: "" });
+              }
+            }}
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="yes" id="nursing-home-yes" />
+              <Label htmlFor="nursing-home-yes">Yes</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no" id="nursing-home-no" />
+              <Label htmlFor="nursing-home-no">No</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {livesInNursingHome && (
+          <div className="space-y-2">
+            <Label htmlFor="nursing-home-rate">
+              What is the monthly nursing home rate?
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-2.5 text-gray-500">$</span>
+              <Input
+                id="nursing-home-rate"
+                type="text"
+                value={nursingHomeRate}
+                onChange={(e) => onChange({ nursingHomeRate: e.target.value })}
                 className="pl-7"
                 placeholder="0.00"
               />

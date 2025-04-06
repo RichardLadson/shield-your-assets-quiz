@@ -66,6 +66,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
     spouseMonthlyIncome: "",
     hasDisabledChildren: false,
     disabledChildrenNames: "",
+    livesInNursingHome: false,
+    nursingHomeRate: "",
     
     // Step 7: Long-Term Care
     hasLongTermCare: false,
@@ -181,6 +183,8 @@ const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
           spouseMonthlyIncome={formData.spouseMonthlyIncome}
           hasDisabledChildren={formData.hasDisabledChildren}
           disabledChildrenNames={formData.disabledChildrenNames}
+          livesInNursingHome={formData.livesInNursingHome}
+          nursingHomeRate={formData.nursingHomeRate}
           maritalStatus={formData.maritalStatus}
           firstName={formData.firstName}
           completingFor={formData.completingFor}
