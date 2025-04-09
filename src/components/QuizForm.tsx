@@ -26,16 +26,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { processQuizSubmission } from "@/lib/medicaid/medicaid-integration";
 import { MedicaidResults } from "./MedicaidResults";
 
-// Define result types for better type safety
-type EligibilityResult = {
-  isEligible: boolean;
-  reasons: string[];
-};
-
-type ReportResult = {
-  summary: string;
-};
-
+// Define form schema with Zod
 const formSchema = z.object({
   name: z.string().min(2, "Please enter your name"),
   email: z.string().email("Please enter a valid email address"),
@@ -47,6 +38,7 @@ const formSchema = z.object({
   state: z.string({
     required_error: "Please select your state",
   }),
+  // Financial information
   bankAccounts: z.string().optional(),
   investments: z.string().optional(),
   homeValue: z.string().optional(),
@@ -66,10 +58,11 @@ export default function QuizForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<{
-    eligibilityResult: EligibilityResult;
-    reportResult: ReportResult;
+    eligibilityResult: any;
+    reportResult: any;
   } | null>(null);
 
+  // Initialize the form
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -93,17 +86,20 @@ export default function QuizForm() {
     },
   });
 
+  // Handle form submission
   async function onSubmit(values: FormData) {
     setIsLoading(true);
-
+    
     try {
+      // Process the quiz submission
       const results = await processQuizSubmission({
         fullName: values.name,
         ...values,
       });
-
+      
+      // Set results state to display the results component
       setResults(results);
-
+      
       toast({
         title: "Eligibility assessment complete",
         description: "Your Medicaid eligibility results are ready.",
@@ -118,11 +114,12 @@ export default function QuizForm() {
       setIsLoading(false);
     }
   }
-
+  
+  // If we have results, show the results component instead of the form
   if (results) {
     return <MedicaidResults 
-      eligibilityResult={results.eligibilityResult}
-      reportResult={results.reportResult}
+      eligibilityResult={results.eligibilityResult} 
+      reportResult={results.reportResult} 
     />;
   }
 
@@ -134,119 +131,339 @@ export default function QuizForm() {
       <div className="bg-white p-6 rounded-lg shadow">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Personal Information */}
+            {/* Personal Information Section */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Personal Information</h2>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl><Input type="email" placeholder="john@example.com" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="phone" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl><Input placeholder="(555) 123-4567" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="age" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Age</FormLabel>
-                    <FormControl><Input type="number" placeholder="65" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="maritalStatus" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Marital Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select marital status" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="single">Single</SelectItem>
-                        <SelectItem value="married">Married</SelectItem>
-                        <SelectItem value="divorced">Divorced</SelectItem>
-                        <SelectItem value="widowed">Widowed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="state" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="alabama">Alabama</SelectItem>
-                        <SelectItem value="florida">Florida</SelectItem>
-                        <SelectItem value="california">California</SelectItem>
-                        <SelectItem value="newyork">New York</SelectItem>
-                        <SelectItem value="texas">Texas</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="john@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input placeholder="(555) 123-4567" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="age"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Age</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="65" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="maritalStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Marital Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select marital status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="single">Single</SelectItem>
+                          <SelectItem value="married">Married</SelectItem>
+                          <SelectItem value="divorced">Divorced</SelectItem>
+                          <SelectItem value="widowed">Widowed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select state" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="alabama">Alabama</SelectItem>
+                          <SelectItem value="florida">Florida</SelectItem>
+                          <SelectItem value="california">California</SelectItem>
+                          <SelectItem value="newyork">New York</SelectItem>
+                          <SelectItem value="texas">Texas</SelectItem>
+                          {/* Add other states as needed */}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
 
-            {/* Financial Information */}
+            {/* Financial Information Section */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Financial Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  ["bankAccounts", "Bank Accounts ($)"],
-                  ["investments", "Investments ($)"],
-                  ["homeValue", "Home Value ($)"],
-                  ["vehicleValue", "Vehicle Value ($)"],
-                  ["lifeInsurance", "Life Insurance ($)"],
-                  ["retirement", "Retirement Accounts ($)"],
-                  ["otherAssets", "Other Assets ($)"],
-                  ["socialSecurity", "Social Security ($)"],
-                  ["pension", "Pension ($)"],
-                  ["otherIncome", "Other Income ($)"]
-                ].map(([name, label]) => (
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Assets</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    key={name}
                     control={form.control}
-                    name={name as keyof FormData}
+                    name="bankAccounts"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{label}</FormLabel>
+                        <FormLabel>Bank Accounts ($)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0" {...field} />
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                ))}
+
+                  <FormField
+                    control={form.control}
+                    name="investments"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Investments ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="homeValue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Home Value ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="vehicleValue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Vehicle Value ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="lifeInsurance"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Life Insurance ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="retirement"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Retirement Accounts ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="otherAssets"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Assets ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Monthly Income</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="socialSecurity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Social Security ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="pension"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pension ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="otherIncome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Income ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Care Situation */}
+            {/* Need for care */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Care Situation</h2>
+              
               <FormField
                 control={form.control}
                 name="needsCareSoon"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>I need care now or in the near future</FormLabel>
+                      <FormLabel>
+                        I need care now or in the near future
+                      </FormLabel>
                       <FormDescription>
                         Check this if you or your loved one needs care immediately or within the next 6 months.
                       </FormDescription>
@@ -256,7 +473,11 @@ export default function QuizForm() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
               {isLoading ? "Processing..." : "Check Eligibility"}
             </Button>
           </form>
