@@ -22,5 +22,104 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Add these scripts right before the closing </body> tag -->
+<script type="module">
+  import MedicaidIntegration from './js/lovable-integration.js';
+  
+  // Initialize with your AWS backend URL (update this when deployed)
+  MedicaidIntegration.initializeAPI('https://your-aws-url.elasticbeanstalk.com/api');
+  
+  // Set up Calendly if you're using it (replace with your calendly URL)
+  MedicaidIntegration.setupCalendly('https://calendly.com/your-link');
+  
+  // Form submission handler
+  document.getElementById('quiz-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Collect form data
+    const formData = {
+      fullName: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      age: document.getElementById('age').value,
+      state: document.getElementById('state').value,
+      maritalStatus: document.getElementById('marital-status').value,
+      
+      // Assets (modify field IDs to match your actual form)
+      savings: parseFloat(document.getElementById('bank-accounts').value || 0),
+      investments: parseFloat(document.getElementById('investments').value || 0),
+      homeValue: parseFloat(document.getElementById('home-value').value || 0),
+      vehicleValue: parseFloat(document.getElementById('vehicle-value').value || 0),
+      lifeInsurance: parseFloat(document.getElementById('life-insurance').value || 0),
+      retirement: parseFloat(document.getElementById('retirement-accounts').value || 0),
+      
+      // Income (modify field IDs to match your actual form)
+      socialSecurity: parseFloat(document.getElementById('social-security').value || 0),
+      pension: parseFloat(document.getElementById('pension').value || 0),
+      retirementIncome: parseFloat(document.getElementById('retirement-income').value || 0),
+      otherIncome: parseFloat(document.getElementById('other-income').value || 0),
+      
+      // Other important fields
+      needsCareSoon: document.getElementById('needs-care-soon').checked ? 'yes' : 'no'
+    };
+    
+    // Show loading indicator (add this HTML element to your page)
+    if (document.getElementById('loading-indicator')) {
+      document.getElementById('loading-indicator').style.display = 'block';
+    }
+    
+    // Process the submission
+    MedicaidIntegration.processQuizSubmission(
+      formData,
+      // Success callback
+      (eligibilityResult, reportResult) => {
+        // Hide the form
+        document.getElementById('quiz-form').style.display = 'none';
+        
+        // Hide loading indicator
+        if (document.getElementById('loading-indicator')) {
+          document.getElementById('loading-indicator').style.display = 'none';
+        }
+        
+        // Show results container
+        document.getElementById('results-container').style.display = 'block';
+        
+        // Display results
+        MedicaidIntegration.displayResults(
+          eligibilityResult, 
+          reportResult, 
+          'results-container'
+        );
+      },
+      // Error callback
+      (error) => {
+        // Hide loading indicator
+        if (document.getElementById('loading-indicator')) {
+          document.getElementById('loading-indicator').style.display = 'none';
+        }
+        
+        // Show error message
+        alert('An error occurred: ' + error.message);
+      }
+    );
+  });
+</script>
+<!-- Add this after your form -->
+<div id="results-container" style="display: none;">
+  <!-- Results will be displayed here -->
+</div>
+
+<!-- Optional loading indicator -->
+<div id="loading-indicator" style="display: none; text-align: center; margin: 20px;">
+  <p>Processing your information...</p>
+  <div class="spinner" style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; margin: 0 auto; animation: spin 2s linear infinite;"></div>
+</div>
+
+<style>
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
   </body>
 </html>
