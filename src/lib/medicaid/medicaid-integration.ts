@@ -58,14 +58,14 @@ async function processQuizSubmission(formData: FormData): Promise<{
 }> {
   try {
     console.log('Processing quiz submission:', formData);
-    
+
     // Assess eligibility
     const eligibilityResult = await MedicaidAPI.assessEligibility(formData);
-    
+
     if (eligibilityResult.status === 'error') {
       throw new Error(eligibilityResult.error);
     }
-    
+
     // Format client info for report generation
     const clientInfo: ClientInfo = {
       name: formData.fullName || formData.name || 'Client',
@@ -73,14 +73,14 @@ async function processQuizSubmission(formData: FormData): Promise<{
       maritalStatus: formData.maritalStatus || 'single',
       healthStatus: formData.healthStatus || 'good'
     };
-    
+
     // Generate a report
     const reportResult = await MedicaidAPI.generateReport(
       eligibilityResult,
       clientInfo,
       formData.state
     );
-    
+
     return {
       eligibilityResult,
       reportResult

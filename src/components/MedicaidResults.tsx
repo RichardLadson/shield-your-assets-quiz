@@ -7,20 +7,18 @@ interface MedicaidResultsProps {
 
 export function MedicaidResults({ eligibilityResult, reportResult }: MedicaidResultsProps) {
   if (!eligibilityResult) return null;
-  
-  // Format currency values
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { 
       style: 'currency', 
       currency: 'USD'
     }).format(amount);
   };
-  
-  // Determine eligibility status
+
   const isEligible = eligibilityResult.isResourceEligible && eligibilityResult.isIncomeEligible;
   const statusClass = isEligible ? 'bg-green-500 text-white' : 'bg-red-500 text-white';
   const statusText = isEligible ? 'Eligible' : 'Not Eligible';
-  
+
   return (
     <div className="medicaid-results">
       <div className="flex justify-between items-center mb-6">
@@ -29,7 +27,7 @@ export function MedicaidResults({ eligibilityResult, reportResult }: MedicaidRes
           {statusText}
         </div>
       </div>
-      
+
       <div className="bg-gray-50 p-4 rounded-md mb-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -50,7 +48,7 @@ export function MedicaidResults({ eligibilityResult, reportResult }: MedicaidRes
           </div>
         </div>
       </div>
-      
+
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-2">Planning Strategies</h3>
         <ul className="list-disc pl-5 space-y-1">
@@ -63,14 +61,14 @@ export function MedicaidResults({ eligibilityResult, reportResult }: MedicaidRes
           )}
         </ul>
       </div>
-      
+
       {reportResult && reportResult.content && (
         <div className="border border-gray-200 rounded-md p-4 my-6">
           <h3 className="text-xl font-semibold mb-2">Your Detailed Report</h3>
           <div className="report-content" dangerouslySetInnerHTML={{ __html: reportResult.content }} />
         </div>
       )}
-      
+
       <div className="text-center bg-blue-50 p-6 rounded-md my-8">
         <h3 className="text-xl font-semibold mb-2">Ready to Take the Next Step?</h3>
         <p className="mb-4">Schedule a consultation with our team to discuss your Medicaid planning options.</p>
@@ -84,3 +82,5 @@ export function MedicaidResults({ eligibilityResult, reportResult }: MedicaidRes
     </div>
   );
 }
+
+export default MedicaidResults;
