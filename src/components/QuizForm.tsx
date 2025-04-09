@@ -1,261 +1,267 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import Step1Introduction from "./steps/Step1Introduction";
-import Step2BasicDetails from "./steps/Step2BasicDetails";
-import Step3PrimaryResidence from "./steps/Step3PrimaryResidence";
-import Step4FinancialSnapshot from "./steps/Step4FinancialSnapshot";
-import Step5VehiclesAssets from "./steps/Step5VehiclesAssets";
-import Step6MonthlyIncome from "./steps/Step6MonthlyIncome";
-import Step7LongTermCare from "./steps/Step7LongTermCare";
-import Step8AssetTransfers from "./steps/Step8AssetTransfers";
-import Step9WrapUp from "./steps/Step9WrapUp";
-import { useToast } from "@/hooks/use-toast";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import { processQuizSubmission } from "@/lib/medicaid/medicaid-integration";
+import { MedicaidResults } from "./MedicaidResults";
 
-const TOTAL_STEPS = 9;
-
-interface QuizFormProps {
-  onProgressUpdate: (progress: number) => void;
-  onComplete: (formData: any) => void;
-}
-
-const QuizForm = ({ onProgressUpdate, onComplete }: QuizFormProps) => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    // Step 1: Introduction
-    firstName: "",
-    lastName: "",
-    completingFor: "yourself",
-    lovedOneName: "",
-    lovedOneGender: "",
-    lovedOneRelation: "",
-    
-    // Step 2: Basic Details
-    state: "",
-    age: "",
-    maritalStatus: "",
-    
-    // Step 3: Primary Residence
-    ownsHome: false,
-    homeValue: "",
-    mortgageStatus: "no",
-    mortgageBalance: "",
-    
-    // Step 4: Financial Snapshot
-    liquidAssets: "",
-    hasRetirementAccounts: false,
-    retirementValue: "",
-    hasSpouseRetirementAccounts: false,
-    spouseRetirementValue: "",
-    hasLifeInsurance: false,
-    lifeInsuranceValue: "",
-    ownsAdditionalProperty: false,
-    additionalPropertyValue: "",
-    additionalPropertyMortgage: "no",
-    additionalPropertyMortgageBalance: "",
-    
-    // Step 5: Vehicles and Other Assets
-    hasVehicles: false,
-    vehiclesValue: "",
-    
-    // Step 6: Monthly Income
-    monthlyIncome: "",
-    spouseMonthlyIncome: "",
-    hasDisabledChildren: false,
-    disabledChildrenNames: "",
-    livesInNursingHome: false,
-    nursingHomeRate: "",
-    
-    // Step 7: Long-Term Care
-    hasLongTermCare: false,
-    longTermCareAmount: "",
-    
-    // Step 8: Asset Transfers
-    hasTransferredAssets: false,
-    transferredAssetsValue: "",
-    
-    // Step 9: Wrap-up
-    email: ""
-  });
-
-  const updateFormData = (data: Partial<typeof formData>) => {
-    setFormData((prev) => ({ ...prev, ...data }));
-  };
-
-  const nextStep = () => {
-    if (currentStep < TOTAL_STEPS) {
-      setCurrentStep((prev) => prev + 1);
-      onProgressUpdate((currentStep / TOTAL_STEPS) * 100);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1);
-      onProgressUpdate(((currentStep - 2) / TOTAL_STEPS) * 100);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleSubmit = () => {
-    // Only validate email when submitting the final form
-    if (!formData.email) {
-      toast({
-        title: "Email Required",
-        description: "Please enter your email to receive the report",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    console.log("Form submitted:", formData);
-    onComplete(formData);
-  };
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return <Step1Introduction 
-          firstName={formData.firstName}
-          lastName={formData.lastName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          lovedOneGender={formData.lovedOneGender}
-          lovedOneRelation={formData.lovedOneRelation}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 2:
-        return <Step2BasicDetails 
-          state={formData.state}
-          age={formData.age}
-          maritalStatus={formData.maritalStatus}
-          firstName={formData.firstName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 3:
-        return <Step3PrimaryResidence 
-          ownsHome={formData.ownsHome}
-          homeValue={formData.homeValue}
-          mortgageStatus={formData.mortgageStatus}
-          mortgageBalance={formData.mortgageBalance}
-          firstName={formData.firstName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 4:
-        return <Step4FinancialSnapshot 
-          liquidAssets={formData.liquidAssets}
-          hasRetirementAccounts={formData.hasRetirementAccounts}
-          retirementValue={formData.retirementValue}
-          hasSpouseRetirementAccounts={formData.hasSpouseRetirementAccounts}
-          spouseRetirementValue={formData.spouseRetirementValue}
-          hasLifeInsurance={formData.hasLifeInsurance}
-          lifeInsuranceValue={formData.lifeInsuranceValue}
-          ownsAdditionalProperty={formData.ownsAdditionalProperty}
-          additionalPropertyValue={formData.additionalPropertyValue}
-          additionalPropertyMortgage={formData.additionalPropertyMortgage}
-          additionalPropertyMortgageBalance={formData.additionalPropertyMortgageBalance}
-          firstName={formData.firstName}
-          maritalStatus={formData.maritalStatus}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 5:
-        return <Step5VehiclesAssets 
-          hasVehicles={formData.hasVehicles}
-          vehiclesValue={formData.vehiclesValue}
-          firstName={formData.firstName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 6:
-        return <Step6MonthlyIncome 
-          monthlyIncome={formData.monthlyIncome}
-          spouseMonthlyIncome={formData.spouseMonthlyIncome}
-          hasDisabledChildren={formData.hasDisabledChildren}
-          disabledChildrenNames={formData.disabledChildrenNames}
-          livesInNursingHome={formData.livesInNursingHome}
-          nursingHomeRate={formData.nursingHomeRate}
-          maritalStatus={formData.maritalStatus}
-          firstName={formData.firstName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 7:
-        return <Step7LongTermCare 
-          hasLongTermCare={formData.hasLongTermCare}
-          longTermCareAmount={formData.longTermCareAmount}
-          firstName={formData.firstName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 8:
-        return <Step8AssetTransfers 
-          hasTransferredAssets={formData.hasTransferredAssets}
-          transferredAssetsValue={formData.transferredAssetsValue}
-          firstName={formData.firstName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      case 9:
-        return <Step9WrapUp 
-          email={formData.email}
-          firstName={formData.firstName}
-          completingFor={formData.completingFor}
-          lovedOneName={formData.lovedOneName}
-          onChange={(data) => updateFormData(data)}
-        />;
-      default:
-        return <div>Error loading form step</div>;
-    }
-  };
-
-  const isLastStep = currentStep === TOTAL_STEPS;
-
-  return (
-    <Card className="p-6">
-      {renderStep()}
-      <div className="flex justify-between mt-6">
-        <Button
-          variant="outline"
-          onClick={prevStep}
-          disabled={currentStep === 1}
-          className="flex items-center"
-        >
-          <ChevronLeft className="mr-2" />
-          Previous
-        </Button>
-        {isLastStep ? (
-          <Button
-            onClick={handleSubmit}
-            className="flex items-center bg-purple-600 hover:bg-purple-700"
-          >
-            Submit
-          </Button>
-        ) : (
-          <Button
-            onClick={nextStep}
-            className="flex items-center bg-purple-600 hover:bg-purple-700"
-          >
-            Next
-            <ChevronRight className="ml-2" />
-          </Button>
-        )}
-      </div>
-    </Card>
-  );
+// Define result types for better type safety
+type EligibilityResult = {
+  isEligible: boolean;
+  reasons: string[];
 };
 
-export default QuizForm;
+type ReportResult = {
+  summary: string;
+};
+
+const formSchema = z.object({
+  name: z.string().min(2, "Please enter your name"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().optional(),
+  age: z.string().min(1, "Please enter your age"),
+  maritalStatus: z.string({
+    required_error: "Please select your marital status",
+  }),
+  state: z.string({
+    required_error: "Please select your state",
+  }),
+  bankAccounts: z.string().optional(),
+  investments: z.string().optional(),
+  homeValue: z.string().optional(),
+  vehicleValue: z.string().optional(),
+  lifeInsurance: z.string().optional(),
+  retirement: z.string().optional(),
+  socialSecurity: z.string().optional(),
+  pension: z.string().optional(),
+  otherIncome: z.string().optional(),
+  otherAssets: z.string().optional(),
+  needsCareSoon: z.boolean().default(false),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export default function QuizForm() {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [results, setResults] = useState<{
+    eligibilityResult: EligibilityResult;
+    reportResult: ReportResult;
+  } | null>(null);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      age: "",
+      maritalStatus: "",
+      state: "",
+      bankAccounts: "0",
+      investments: "0",
+      homeValue: "0",
+      vehicleValue: "0",
+      lifeInsurance: "0",
+      retirement: "0",
+      socialSecurity: "0",
+      pension: "0",
+      otherIncome: "0",
+      otherAssets: "0",
+      needsCareSoon: false,
+    },
+  });
+
+  async function onSubmit(values: FormData) {
+    setIsLoading(true);
+
+    try {
+      const results = await processQuizSubmission({
+        fullName: values.name,
+        ...values,
+      });
+
+      setResults(results);
+
+      toast({
+        title: "Eligibility assessment complete",
+        description: "Your Medicaid eligibility results are ready.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to process your submission. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (results) {
+    return <MedicaidResults 
+      eligibilityResult={results.eligibilityResult}
+      reportResult={results.reportResult}
+    />;
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto py-6">
+      <h1 className="text-3xl font-bold mb-8 text-center">
+        Medicaid Eligibility Quiz
+      </h1>
+      <div className="bg-white p-6 rounded-lg shadow">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Personal Information */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Personal Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="name" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl><Input type="email" placeholder="john@example.com" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="phone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl><Input placeholder="(555) 123-4567" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="age" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Age</FormLabel>
+                    <FormControl><Input type="number" placeholder="65" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="maritalStatus" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Marital Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Select marital status" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="single">Single</SelectItem>
+                        <SelectItem value="married">Married</SelectItem>
+                        <SelectItem value="divorced">Divorced</SelectItem>
+                        <SelectItem value="widowed">Widowed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="state" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="alabama">Alabama</SelectItem>
+                        <SelectItem value="florida">Florida</SelectItem>
+                        <SelectItem value="california">California</SelectItem>
+                        <SelectItem value="newyork">New York</SelectItem>
+                        <SelectItem value="texas">Texas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+            </div>
+
+            {/* Financial Information */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Financial Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  ["bankAccounts", "Bank Accounts ($)"],
+                  ["investments", "Investments ($)"],
+                  ["homeValue", "Home Value ($)"],
+                  ["vehicleValue", "Vehicle Value ($)"],
+                  ["lifeInsurance", "Life Insurance ($)"],
+                  ["retirement", "Retirement Accounts ($)"],
+                  ["otherAssets", "Other Assets ($)"],
+                  ["socialSecurity", "Social Security ($)"],
+                  ["pension", "Pension ($)"],
+                  ["otherIncome", "Other Income ($)"]
+                ].map(([name, label]) => (
+                  <FormField
+                    key={name}
+                    control={form.control}
+                    name={name as keyof FormData}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{label}</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Care Situation */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Care Situation</h2>
+              <FormField
+                control={form.control}
+                name="needsCareSoon"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>I need care now or in the near future</FormLabel>
+                      <FormDescription>
+                        Check this if you or your loved one needs care immediately or within the next 6 months.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Processing..." : "Check Eligibility"}
+            </Button>
+          </form>
+        </Form>
+      </div>
+    </div>
+  );
+}
